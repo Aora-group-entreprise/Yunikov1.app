@@ -8,6 +8,10 @@ import { getOptionalUser } from '../getAuthUser';
 export async function getRingState(params: { targetUserId: string }) {
    const { targetUserId } = validate(TargetUserIdSchema, params);
    const { supabase, user } = await getOptionalUser();
+   if (!supabase) {
+      return { hasStories: false, allStoriesViewed: false };
+   }
+
    const authUserId = user?.id ?? null;
    const hideAi = user ? await getHideAiContent() : false;
 

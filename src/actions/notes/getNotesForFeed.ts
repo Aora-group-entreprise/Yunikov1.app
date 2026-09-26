@@ -14,7 +14,7 @@ export type NoteEntry = {
 export async function getNotesForFeed() {
    const { supabase, user } = await getOptionalUser();
 
-   if (!user) return { notes: [], ownNote: null, ownNoteId: null };
+   if (!user || !supabase) return { notes: [], ownNote: null, ownNoteId: null };
 
    const { data, error } = await supabase
       .from('notes')

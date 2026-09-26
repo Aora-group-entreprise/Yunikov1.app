@@ -8,7 +8,7 @@ import { getOptionalUser } from '../../getAuthUser';
 export async function getSavedPosts() {
    const { supabase, user } = await getOptionalUser();
 
-   if (!user) return [];
+   if (!user || !supabase) return [];
 
    const hideAi = await getHideAiContent();
    const { data, error } = await savedPostsQuery(supabase, user.id, hideAi);
