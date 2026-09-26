@@ -1,4 +1,4 @@
-import { expect, test as setup } from '@playwright/test';
+import { test as setup, type Page } from '@playwright/test';
 
 const API = (process.env.NEXT_PUBLIC_YUNIKO_API_URL ?? 'https://yuniko-api.lafatriniainaallane.workers.dev').replace(/\/+$/, '');
 const suffix = Date.now().toString(36);
@@ -15,7 +15,7 @@ async function register(user: typeof TEST_USER_1) {
    if (!response.ok) throw new Error(`Failed to create E2E user: ${await response.text()}`);
 }
 
-async function authenticate(page: Parameters<Parameters<typeof setup>[1]>[0]['page'], user: typeof TEST_USER_1) {
+async function authenticate(page: Page, user: typeof TEST_USER_1) {
    await page.goto('/login');
    await page.getByPlaceholder('Username').first().fill(user.username);
    await page.getByPlaceholder('Password').first().fill(user.password);
