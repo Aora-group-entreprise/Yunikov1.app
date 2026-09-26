@@ -20,8 +20,16 @@ export async function deleteAccount() {
          .not('mux_asset_id', 'is', null),
    ]);
 
-   const { error } = await supabase.rpc('delete_user');
-   throwIfError({ error }, 'Failed to delete account');
+   const { yunikoApiFetch } = await import('@/src/lib/yuniko/api');
+   const response = await yunikoApiFetch('/auth/delete-account', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ confirmation: 'DELETE' }),
+   });
+   if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error ?? 'Failed to delete account');
+   }
 
    const assetIds = [
       ...(postVideos ?? []).map(v => v.mux_asset_id as string),
