@@ -20,7 +20,6 @@ const nextConfig: NextConfig = {
          { hostname: 'picsum.photos' },
       ],
    },
-   reactCompiler: true,
    reactStrictMode: true,
    async headers() {
       return [
