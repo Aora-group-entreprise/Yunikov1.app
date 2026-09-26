@@ -1,4 +1,6 @@
 import { redirect } from 'next/navigation';
+
+export const dynamic = 'force-dynamic';
 import { getAuthProfile } from '@/src/lib/supabase/getAuthProfile';
 import EditProfile from '@/src/pageComponents/EditProfile';
 
