@@ -71,7 +71,7 @@ export default function CaptionPanel({
                <UserAvatar
                   alt="Your profile image"
                   size={30}
-                  src={userData?.avatar_url ?? null}
+                  src={userData?.avatarUrl ?? null}
                   username={userData?.username ?? ''}
                   userId={userData?.id}
                />
@@ -147,7 +147,7 @@ export default function CaptionPanel({
          >
             <div {...stylex.props(styles.shareRow)}>
                <UserAvatar
-                  src={userData?.avatar_url ?? null}
+                  src={userData?.avatarUrl ?? null}
                   alt={userData?.username ?? 'User profile image'}
                   size={36}
                   username={userData?.username ?? ''}
