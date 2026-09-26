@@ -59,7 +59,7 @@ export default function CommentItem({
    const [showDeleteModal, setShowDeleteModal] = useState(false);
    const { mutate: toggleLike } = useToggleCommentLike(comment, commentsKey);
 
-   const isLiked = comment.comment_likes.some(cl => cl.user_id === authUser?.id);
+   const isLiked = comment.comment_likes.some(cl => String(cl.user_id) === String(authUser?.id));
    const canDelete = !!authUser && (authUser.id === comment.user.id || authUser.id === postOwnerId);
 
    const { mutate: deleteCommentMutate, isPending: isDeleting } = useMutation({
