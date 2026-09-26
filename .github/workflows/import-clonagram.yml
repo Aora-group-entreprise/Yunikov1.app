@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - clonagram-import
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
