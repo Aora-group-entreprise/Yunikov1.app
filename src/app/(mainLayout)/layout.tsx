@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import * as stylex from '@stylexjs/stylex';
 import { Suspense } from 'react';
+import AuthGate from '@/src/components/AuthGate';
 import CreatePostModal from '@/src/components/CreatePostModal';
 import CreateStoryModal from '@/src/components/CreateStoryModal';
 import IncomingCallListener from '@/src/components/IncomingCallListener';
@@ -18,29 +19,31 @@ import { styles } from './layout.stylex';
 
 export default function MainLayout({ children }: Readonly<{ children: React.ReactNode }>) {
    return (
-      <div {...stylex.props(styles.root)}>
-         <ModalResetOnNav />
+      <AuthGate>
+         <div {...stylex.props(styles.root)}>
+            <ModalResetOnNav />
 
-         <MainNavbar />
-         <PostFullViewModal />
-         <OwnerActionsModal />
-         <SharePostModal />
-         <ShareStoryModal />
-         <CreatePostModal />
-         <CreateStoryModal />
-         <Suspense>
-            <NewNoteModalWrapper />
-         </Suspense>
-         <Suspense>
-            <SearchPortal />
-         </Suspense>
-         <Suspense>
-            <NotificationsPortal />
-         </Suspense>
-         <Suspense>
-            <IncomingCallListener />
-         </Suspense>
-         {children}
-      </div>
+            <MainNavbar />
+            <PostFullViewModal />
+            <OwnerActionsModal />
+            <SharePostModal />
+            <ShareStoryModal />
+            <CreatePostModal />
+            <CreateStoryModal />
+            <Suspense>
+               <NewNoteModalWrapper />
+            </Suspense>
+            <Suspense>
+               <SearchPortal />
+            </Suspense>
+            <Suspense>
+               <NotificationsPortal />
+            </Suspense>
+            <Suspense>
+               <IncomingCallListener />
+            </Suspense>
+            {children}
+         </div>
+      </AuthGate>
    );
 }
