@@ -79,7 +79,7 @@ export default function FollowListModal() {
                         name={user.username}
                         fullName={user.full_name}
                         rightElement={
-                           authUser && authUser.id !== user.id ? (
+                           authUser && String(authUser.id) !== String(user.id) ? (
                               <div {...stylex.props(styles.followButtonWrapper)}>
                                  <FollowButton
                                     targetUserId={user.id}
