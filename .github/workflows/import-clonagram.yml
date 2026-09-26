@@ -33,8 +33,8 @@ jobs:
           test -n "$SRC_DIR"
           test -f "$SRC_DIR/package.json"
           find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
-          find "$SRC_DIR" -mindepth 1 -maxdepth 1 ! -name .git ! -name .github -exec cp -a {} . \\;
-          rm -f .github/workflows/import-clonagram.yml
+          cp -a "$SRC_DIR"/. .
+          rm -rf .github
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
