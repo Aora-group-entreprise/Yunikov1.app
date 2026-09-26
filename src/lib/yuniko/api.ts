@@ -11,7 +11,6 @@ export interface YunikoAuthUser {
   bio: string;
   website: string | null;
   createdAt: string;
-  authUserId?: string | null;
 }
 
 export async function yunikoApiFetch(path: string, options: RequestInit = {}) {
@@ -19,13 +18,7 @@ export async function yunikoApiFetch(path: string, options: RequestInit = {}) {
   const headers = new Headers(options.headers);
   if (!headers.has('Content-Type') && options.body) headers.set('Content-Type', 'application/json');
 
-  const isAuthRequest = normalized === '/auth' || normalized.startsWith('/auth/');
-  const url =
-    isAuthRequest && typeof window !== 'undefined'
-      ? `/api${normalized}`
-      : `${API_BASE_URL}/api${normalized}`;
-
-  return fetch(url, {
+  return fetch(`${API_BASE_URL}/api${normalized}`, {
     ...options,
     headers,
     credentials: 'include',
