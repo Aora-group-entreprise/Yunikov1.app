@@ -28,7 +28,15 @@ export async function getHomeFeedPosts(params: {
 }) {
    const { variant, cursor } = validate(CursorSchema, params);
    const { supabase, user } = await getOptionalUser();
-   const hideAi = user ? await getHideAiContent() : false;
+
+   // Yuniko API owns authentication. Its HttpOnly session cookie belongs to
+   // the API host, so the Next.js server cannot use it as a Supabase session.
+   // Never query RLS-protected feed data as an anonymous Supabase user.
+   if (!user) {
+      return { posts: [], nextCursor: null };
+   }
+
+   const hideAi = await getHideAiContent();
 
    if (variant === 'home') {
       let query = supabase

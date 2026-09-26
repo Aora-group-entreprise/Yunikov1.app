@@ -9,8 +9,16 @@ import { getOptionalUser } from '../getAuthUser';
 
 export async function getActiveStories() {
    const { supabase, user } = await getOptionalUser();
-   const currentUserId = user?.id ?? null;
-   const hideAi = user ? await getHideAiContent() : false;
+
+   // Yuniko API owns authentication. The API session is not a Supabase Auth
+   // session on the Next.js server, so do not issue an RLS-protected stories
+   // query without a verified server-side identity.
+   if (!user) {
+      return { entries: [], viewedStoryIds: [], reactedStoryIds: [] };
+   }
+
+   const currentUserId = user.id;
+   const hideAi = await getHideAiContent();
 
    const { data, error } = await activeStoriesQuery(supabase, hideAi);
 
