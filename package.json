@@ -5,7 +5,7 @@
    "scripts": {
       "dev": "next dev",
       "prebuild": "node scripts/validateLoginImages.mjs",
-      "build": "next build && bunx opennextjs-cloudflare@1.20.6 build",
+      "build": "next build && bunx --package @opennextjs/cloudflare@1.20.6 opennextjs-cloudflare build",
       "start": "next start",
       "lint": "biome lint --write .",
       "format": "biome format --write . --reporter=summary",
@@ -21,9 +21,9 @@
       "seed:process": "bun run scripts/seed/process.ts",
       "seed:seed": "bun run scripts/seed/seed.ts",
       "seed:cleanup": "bun run scripts/seed/helpers/cleanup.ts",
-      "cloudflare:build": "bunx opennextjs-cloudflare@1.20.6 build",
-      "cloudflare:deploy": "bunx opennextjs-cloudflare@1.20.6 deploy",
-      "cloudflare:preview": "bunx opennextjs-cloudflare@1.20.6 build && bunx wrangler@4.140.0 dev"
+      "cloudflare:build": "bunx --package @opennextjs/cloudflare@1.20.6 opennextjs-cloudflare build",
+      "cloudflare:deploy": "bunx --package @opennextjs/cloudflare@1.20.6 opennextjs-cloudflare build && bunx wrangler@4.140.0 deploy",
+      "cloudflare:preview": "bunx --package @opennextjs/cloudflare@1.20.6 opennextjs-cloudflare build && bunx wrangler@4.140.0 dev"
    },
    "dependencies": {
       "@ffmpeg/ffmpeg": "^0.12.15",
