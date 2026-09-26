@@ -1,7 +1,7 @@
 const API_BASE_URL = (process.env.NEXT_PUBLIC_YUNIKO_API_URL ?? 'https://yuniko-api.lafatriniainaallane.workers.dev').replace(/\/+$/, '');
 
 export interface YunikoAuthUser {
-  id: number;
+  id: string;
   username: string;
   displayName: string;
   avatarUrl: string | null;
@@ -12,6 +12,11 @@ export interface YunikoAuthUser {
   website: string | null;
   hide_ai_content?: boolean;
   createdAt: string;
+}
+
+export function normalizeYunikoAuthUser(data: unknown): YunikoAuthUser {
+  const user = data as YunikoAuthUser & { id: string | number };
+  return { ...user, id: String(user.id) };
 }
 
 export async function yunikoApiFetch(path: string, options: RequestInit = {}) {

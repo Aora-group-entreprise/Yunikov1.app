@@ -209,7 +209,7 @@ export default function NotificationsPortal() {
    const [activeCategory, setActiveCategory] = useState<FilterCategory>('all');
 
    const { data: notificationRows = [], isPending } = useQuery({
-      queryKey: authUser?.id ? queryKeys.notifications(authUser.id) : ['notifications'],
+      queryKey: authUser?.id ? queryKeys.notifications(String(authUser.id)) : ['notifications'],
       queryFn: () => getNotifications() as Promise<NotificationRow[]>,
       enabled: isOpen && !!authUser?.id,
       staleTime: 30_000,

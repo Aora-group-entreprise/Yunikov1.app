@@ -2,7 +2,7 @@ import 'server-only';
 
 import { cookies } from 'next/headers';
 import { cache } from 'react';
-import { yunikoApiFetch, type YunikoAuthUser } from './api';
+import { normalizeYunikoAuthUser, yunikoApiFetch, type YunikoAuthUser } from './api';
 
 export const getYunikoServerUser = cache(async (): Promise<YunikoAuthUser | null> => {
   const cookieHeader = (await cookies()).toString();
@@ -10,5 +10,5 @@ export const getYunikoServerUser = cache(async (): Promise<YunikoAuthUser | null
     headers: cookieHeader ? { cookie: cookieHeader } : undefined,
   });
   if (!response.ok) return null;
-  return await response.json() as YunikoAuthUser;
+  return normalizeYunikoAuthUser(await response.json());
 });

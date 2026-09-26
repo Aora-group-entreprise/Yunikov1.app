@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { yunikoApiFetch, type YunikoAuthUser } from '@/src/lib/yuniko/api';
+import { normalizeYunikoAuthUser, yunikoApiFetch, type YunikoAuthUser } from '@/src/lib/yuniko/api';
 import { queryKeys } from '@/src/lib/queryKeys';
 
 export function useAuthUser() {
@@ -9,7 +9,7 @@ export function useAuthUser() {
          const response = await yunikoApiFetch('/auth/me');
          if (response.status === 401) return null;
          if (!response.ok) throw new Error('Failed to get auth user');
-         return await response.json() as YunikoAuthUser;
+         return normalizeYunikoAuthUser(await response.json());
       },
       staleTime: Infinity,
    });

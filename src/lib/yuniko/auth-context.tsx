@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { YunikoAuthUser } from './api';
-import { yunikoApiFetch } from './api';
+import { normalizeYunikoAuthUser, yunikoApiFetch } from './api';
 
 interface AuthContextValue {
   user: YunikoAuthUser | null;
@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await yunikoApiFetch('/auth/me');
       if (response.ok) {
-        storeUser(await response.json() as YunikoAuthUser);
+        storeUser(normalizeYunikoAuthUser(await response.json()));
       } else if (response.status === 401) {
         storeUser(null);
       }
@@ -56,12 +56,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           storeUser(null);
         } else {
           const cached = localStorage.getItem(USER_KEY);
-          if (cached) storeUser(JSON.parse(cached) as YunikoAuthUser);
+          if (cached) storeUser(normalizeYunikoAuthUser(JSON.parse(cached)));
         }
       } catch {
         const cached = localStorage.getItem(USER_KEY);
         if (cached && active) {
-          try { storeUser(JSON.parse(cached) as YunikoAuthUser); } catch { storeUser(null); }
+          try { storeUser(normalizeYunikoAuthUser(JSON.parse(cached))); } catch { storeUser(null); }
         }
       } finally {
         if (active) setIsLoading(false);

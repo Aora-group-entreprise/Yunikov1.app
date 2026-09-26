@@ -37,7 +37,7 @@ export default function ShareModal({ isOpen, id, onClose, onSend, description }:
       queryKey: queryKeys.followedUsers(),
       queryFn: async () => {
          if (!authUser?.id) return [];
-         const { data } = await followedUsersQuery(supabase, authUser.id);
+         const { data } = await followedUsersQuery(supabase, String(authUser.id));
          return (data ?? []).map(r => r.user).filter((u): u is NonNullable<typeof u> => u != null);
       },
       enabled: !!authUser?.id,
@@ -51,7 +51,7 @@ export default function ShareModal({ isOpen, id, onClose, onSend, description }:
          const { data } = await userProfilesQuery(supabase, {
             search: query,
             limit: 20,
-            excludeId: authUser?.id,
+            excludeId: authUser ? String(authUser.id) : undefined,
             hideAi: authUser?.hide_ai_content ?? false,
          });
          return data ?? [];
