@@ -5,7 +5,7 @@
    "scripts": {
       "dev": "next dev",
       "prebuild": "node scripts/validateLoginImages.mjs",
-      "build": "next build && npx --yes @opennextjs/cloudflare@1.20.6 build",
+      "build": "bun add --dev --exact @opennextjs/cloudflare@1.20.6 && next build && bun x --yes @opennextjs/cloudflare@1.20.6 build",
       "start": "next start",
       "lint": "biome lint --write .",
       "format": "biome format --write . --reporter=summary",
@@ -20,7 +20,7 @@
       "seed:generate": "bun run scripts/seed/generate.ts",
       "seed:process": "bun run scripts/seed/process.ts",
       "seed:seed": "bun run scripts/seed/seed.ts",
-      "seed:cleanup": "bun run scripts/seed/helpers/cleanup.ts",
+      "seed:cleanup": "bun run scripts/seed/cleanup.ts",
       "cloudflare:build": "npx --yes @opennextjs/cloudflare@1.20.6 build",
       "cloudflare:deploy": "npx --yes @opennextjs/cloudflare@1.20.6 build && bunx wrangler@4.140.0 deploy",
       "cloudflare:preview": "npx --yes @opennextjs/cloudflare@1.20.6 build && bunx wrangler@4.140.0 dev"
