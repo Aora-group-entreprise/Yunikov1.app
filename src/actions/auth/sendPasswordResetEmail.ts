@@ -1,21 +1,19 @@
 'use server';
 import 'server-only';
-import { headers } from 'next/headers';
-import { createServerClient } from '@/src/lib/supabase/server';
-import { throwIfError } from '@/src/lib/unwrap';
-import { SendPasswordResetSchema, validate } from '@/src/lib/validation';
+
+import { yunikoApiFetch } from '@/src/lib/yuniko/api';
 
 export async function sendPasswordResetEmail(params: { email: string }) {
-   const { email } = validate(SendPasswordResetSchema, params);
-   const supabase = await createServerClient();
-   const headersList = await headers();
-   const host = headersList.get('host') ?? 'localhost:3000';
-   const protocol = host.includes('localhost') ? 'http' : 'https';
-   const origin = `${protocol}://${host}`;
+   const username = params.email.trim();
+   if (!username) throw new Error('Username is required');
 
-   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${origin}/auth/reset-callback`,
+   const response = await yunikoApiFetch('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ username, newPassword: '' }),
    });
 
-   throwIfError({ error }, 'Failed to send password reset email');
+   if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error ?? 'Password reset failed');
+   }
 }
