@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import * as stylex from '@stylexjs/stylex';
 import { Suspense } from 'react';
 import CreatePostModal from '@/src/components/CreatePostModal';
