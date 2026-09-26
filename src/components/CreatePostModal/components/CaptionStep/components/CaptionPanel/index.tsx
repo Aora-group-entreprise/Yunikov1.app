@@ -151,7 +151,7 @@ export default function CaptionPanel({
                   alt={userData?.username ?? 'User profile image'}
                   size={36}
                   username={userData?.username ?? ''}
-                  userId={userData?.id}
+                  userId={userData ? String(userData.id) : undefined}
                />
                <div {...stylex.props(styles.shareInfo)}>
                   <span {...stylex.props(styles.shareName)}>{userData?.displayName}</span>
