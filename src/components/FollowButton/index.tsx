@@ -33,7 +33,7 @@ export default function FollowButton({
    const { data: state = 'none' } = useQuery({
       queryKey,
       queryFn: async () => {
-         return getFollowStatus(supabase, authUser?.id ?? '', targetUserId);
+         return getFollowStatus(supabase, authUser ? String(authUser.id) : '', targetUserId);
       },
       ...(initialState !== undefined && { initialData: initialState }),
       staleTime: Infinity,
