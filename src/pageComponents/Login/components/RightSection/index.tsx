@@ -1,7 +1,6 @@
 'use client';
 
 import * as stylex from '@stylexjs/stylex';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import { MdArrowBack, MdArrowForward, MdCalendarToday, MdCameraAlt, MdCheckCircle, MdLock, MdPerson, MdVisibility, MdVisibilityOff, MdPublic, MdClose } from 'react-icons/md';
@@ -160,7 +159,7 @@ export default function RightSection({ initialReset, initialError }: { initialRe
       <main {...stylex.props(styles.root)} style={{ background: 'linear-gradient(180deg, rgba(255,0,110,.13), rgba(139,0,255,.08) 48%, transparent)' }}>
          <div style={{ textAlign: 'center', marginBottom: 24 }}>
             <div style={{ width: 68, height: 68, borderRadius: 20, margin: '0 auto 10px', display: 'grid', placeItems: 'center', background: GRADIENT, boxShadow: '0 0 44px rgba(255,0,110,.35)' }}>
-               <Image src="/logo.svg" alt="Yuniko" width={44} height={44} />
+               <span style={{ color: 'white', fontSize: 34, fontWeight: 900, lineHeight: 1 }}>Y</span>
             </div>
             <div style={{ fontSize: 24, fontWeight: 900, background: GRADIENT, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Yuniko</div>
          </div>
