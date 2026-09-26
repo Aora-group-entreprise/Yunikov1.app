@@ -24,15 +24,20 @@ jobs:
 
       - name: Import Clonagram source
         run: |
-          set -e
-          rm -rf /tmp/Clonagram
-          git clone --depth 1 https://github.com/zivavu/Clonagram.git /tmp/Clonagram
+          set -euo pipefail
+          rm -rf /tmp/clonagram-src /tmp/clonagram.tar.gz
+          mkdir -p /tmp/clonagram-src
+          curl -L --fail --retry 3 -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/repos/zivavu/Clonagram/tarball/main" -o /tmp/clonagram.tar.gz
+          tar -xzf /tmp/clonagram.tar.gz -C /tmp/clonagram-src
+          SRC_DIR="$(find /tmp/clonagram-src -mindepth 1 -maxdepth 1 -type d | head -n 1)"
+          test -n "$SRC_DIR"
+          test -f "$SRC_DIR/package.json"
           find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
-          cp -a /tmp/Clonagram/. .
+          cp -a "$SRC_DIR"/. .
           rm -f .github/workflows/import-clonagram.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --cached --quiet && exit 0
+          git status --short
           git commit -m "Import Clonagram application"
           git push origin HEAD:clonagram-import
