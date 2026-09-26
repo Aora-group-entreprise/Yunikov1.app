@@ -1,12 +1,10 @@
 'use client';
 
 import * as stylex from '@stylexjs/stylex';
-import Link from 'next/link';
 import { useState } from 'react';
 import { MdArrowBack, MdArrowForward, MdCalendarToday, MdCameraAlt, MdCheckCircle, MdLock, MdPerson, MdVisibility, MdVisibilityOff, MdPublic, MdClose } from 'react-icons/md';
 import { useYunikoAuth } from '@/src/lib/yuniko/auth-context';
 import { yunikoApiFetch, type YunikoAuthUser } from '@/src/lib/yuniko/api';
-import { colors } from '../../../../styles/tokens.stylex';
 import { styles } from './index.stylex';
 
 type Mode = 'signin' | 'signup' | 'forgot';
@@ -231,10 +229,6 @@ export default function RightSection({ initialReset, initialError }: { initialRe
                <button disabled={loading || resetDone} onClick={resetPassword} style={{ width: '100%', marginTop: 16, padding: 15, border: 0, borderRadius: 16, color: 'white', fontWeight: 800, background: GRADIENT }}>{loading ? 'Please wait…' : 'Reset Password'}</button>
             </>
          )}
-
-         <div style={{ marginTop: 24, textAlign: 'center' }}>
-            <Link href="/" style={{ color: colors.accent, fontSize: 12 }}>Continue without reporting content</Link>
-         </div>
       </main>
    );
 }
