@@ -14,6 +14,8 @@ import { getOptionalUser } from '../getAuthUser';
 export async function getPost(params: { postId: string }) {
    const { postId } = validate(PostIdSchema, params);
    const { supabase, user } = await getOptionalUser();
+   if (!supabase) throw new Error('Unauthorized');
+
    const hideAi = user ? await getHideAiContent() : false;
 
    let query = supabase
