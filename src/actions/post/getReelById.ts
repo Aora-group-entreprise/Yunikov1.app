@@ -10,6 +10,7 @@ export async function getReelById(params: { postId: string | null }) {
    if (!params.postId) return null;
    const { postId } = validate(PostIdSchema, params);
    const { supabase, user } = await getOptionalUser();
+   if (!supabase) throw new Error('Unauthorized');
 
    const { data, error } = await reelsQuery(supabase, user?.id).eq('id', postId).single();
    throwIfError({ error }, 'Failed to fetch reel');
