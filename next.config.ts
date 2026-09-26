@@ -12,6 +12,7 @@ function getSupabaseHost() {
 const supabaseHost = getSupabaseHost();
 
 const nextConfig: NextConfig = {
+   output: 'standalone',
    images: {
       remotePatterns: [
          { hostname: supabaseHost },
