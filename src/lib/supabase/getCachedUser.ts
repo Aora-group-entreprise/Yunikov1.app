@@ -8,9 +8,9 @@ export const getRequestClient = cache(createServerClient);
 
 export const getCachedUser = cache(async () => {
    const user = await getYunikoServerUser();
-   if (!user?.authUserId) return null;
+   if (!user) return null;
    return {
-      id: user.authUserId,
+      id: String(user.id),
       username: user.username,
       email: null,
       is_anonymous: false,

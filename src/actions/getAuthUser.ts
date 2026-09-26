@@ -9,16 +9,11 @@ export const getAuthUser = cache(async () => {
    const yunikoUser = await getYunikoServerUser();
    if (!yunikoUser) throw new Error('Unauthorized');
 
-   const authUserId = yunikoUser.authUserId;
-   if (!authUserId) {
-      throw new Error('Yuniko account is not linked to a Supabase profile');
-   }
-
    const supabase = await getRequestClient();
    return {
       supabase,
       user: {
-         id: authUserId,
+         id: String(yunikoUser.id),
          username: yunikoUser.username,
          email: null,
          user_metadata: {
@@ -33,10 +28,10 @@ export const getAuthUser = cache(async () => {
 
 export const getOptionalUser = cache(async () => {
    const yunikoUser = await getYunikoServerUser();
-   if (!yunikoUser?.authUserId) return { supabase: await getRequestClient(), user: null, yunikoUser: null };
+   if (!yunikoUser) return { supabase: await getRequestClient(), user: null, yunikoUser: null };
    return {
       supabase: await getRequestClient(),
-      user: { id: yunikoUser.authUserId, username: yunikoUser.username },
+      user: { id: String(yunikoUser.id), username: yunikoUser.username },
       yunikoUser,
    };
 });

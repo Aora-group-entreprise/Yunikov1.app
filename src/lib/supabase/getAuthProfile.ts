@@ -7,12 +7,12 @@ import { getYunikoServerUser } from '../yuniko/server-auth';
 
 export const getAuthProfile = cache(async () => {
    const user = await getYunikoServerUser();
-   if (!user?.authUserId) return null;
+   if (!user) return null;
    const supabase = await getRequestClient();
    const { data: profile } = await supabase
       .from('profiles')
       .select(PROFILE_BASE_SELECT)
-      .eq('id', user.authUserId)
+      .eq('username', user.username)
       .single();
    return profile;
 });
