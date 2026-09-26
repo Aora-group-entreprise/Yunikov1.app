@@ -6,6 +6,7 @@ import { useState } from 'react';
 import AppToast from '@/src/components/AppToast';
 import MediaContextMenuBlocker from '@/src/components/MediaContextMenuBlocker';
 import { ThemeProvider } from '@/src/components/ThemeProvider';
+import { AuthProvider } from '@/src/lib/yuniko/auth-context';
 
 export function Providers({ children }: { children: React.ReactNode }) {
    const [queryClient] = useState(() => new QueryClient());
@@ -14,9 +15,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <QueryClientProvider client={queryClient}>
          <ToastProvider>
             <ThemeProvider>
-               {children}
-               <AppToast />
-               <MediaContextMenuBlocker />
+               <AuthProvider>
+                  {children}
+                  <AppToast />
+                  <MediaContextMenuBlocker />
+               </AuthProvider>
             </ThemeProvider>
          </ToastProvider>
       </QueryClientProvider>
