@@ -5,7 +5,7 @@
    "scripts": {
       "dev": "next dev",
       "prebuild": "node scripts/validateLoginImages.mjs",
-      "build": "next build",
+      "build": "next build && bunx opennextjs-cloudflare@1.20.6 build",
       "start": "next start",
       "lint": "biome lint --write .",
       "format": "biome format --write . --reporter=summary",
