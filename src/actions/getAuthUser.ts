@@ -28,7 +28,7 @@ export const getAuthUser = cache(async () => {
 
 export const getOptionalUser = cache(async () => {
    const yunikoUser = await getYunikoServerUser();
-   if (!yunikoUser) return { supabase: await getRequestClient(), user: null, yunikoUser: null };
+   if (!yunikoUser) return { supabase: null, user: null, yunikoUser: null };
    return {
       supabase: await getRequestClient(),
       user: { id: String(yunikoUser.id), username: yunikoUser.username },
