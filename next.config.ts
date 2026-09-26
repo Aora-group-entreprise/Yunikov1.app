@@ -5,7 +5,7 @@ function getSupabaseHost() {
    try {
       return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').hostname;
    } catch {
-      return 'pggvzapkivjgsybyzjok.supabase.co';
+      return 'pqjrmtkfgwoocbvmwbby.supabase.co';
    }
 }
 
