@@ -12,7 +12,13 @@ export async function searchProfiles(options: {
 }) {
    const validated = validate(SearchProfilesSchema, options);
    const { supabase, user } = await getOptionalUser();
-   const hideAi = user ? await getHideAiContent() : false;
+
+   // The authenticated session belongs to the Yuniko API host. The Next.js
+   // server cannot see that HttpOnly cookie, so an anonymous server request
+   // must not query the RLS-protected profiles table.
+   if (!user) return [];
+
+   const hideAi = await getHideAiContent();
 
    let q = supabase
       .from('profiles')
