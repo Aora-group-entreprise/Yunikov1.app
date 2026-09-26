@@ -73,7 +73,7 @@ export default function CaptionPanel({
                   size={30}
                   src={userData?.avatarUrl ?? null}
                   username={userData?.username ?? ''}
-                  userId={userData?.id}
+                  userId={userData ? String(userData.id) : undefined}
                />
                <span>{}</span>
             </div>
@@ -154,7 +154,7 @@ export default function CaptionPanel({
                   userId={userData?.id}
                />
                <div {...stylex.props(styles.shareInfo)}>
-                  <span {...stylex.props(styles.shareName)}>{userData?.full_name}</span>
+                  <span {...stylex.props(styles.shareName)}>{userData?.displayName}</span>
                   <span {...stylex.props(styles.shareMeta)}>Clonedbook · Public</span>
                </div>
                <Toggle
