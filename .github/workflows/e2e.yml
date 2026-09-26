@@ -14,6 +14,8 @@ jobs:
          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+         SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+         TEST_SUPABASE_PROJECT_REF: ${{ secrets.TEST_SUPABASE_PROJECT_REF }}
       steps:
          - uses: actions/checkout@v4
 
@@ -29,9 +31,9 @@ jobs:
            run: bunx playwright install --with-deps chromium
 
          - name: Link and apply migrations to test project
-           if: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' && secrets.TEST_SUPABASE_PROJECT_REF != '' }}
+           if: ${{ env.SUPABASE_ACCESS_TOKEN != '' && env.TEST_SUPABASE_PROJECT_REF != '' }}
            env:
-              SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+              SUPABASE_ACCESS_TOKEN: ${{ env.SUPABASE_ACCESS_TOKEN }}
            run: |
               bunx supabase link --project-ref ${{ secrets.TEST_SUPABASE_PROJECT_REF }}
               bunx supabase db push --yes
@@ -40,11 +42,11 @@ jobs:
            run: bun run build
 
          - name: Run Playwright tests
-           if: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' && secrets.TEST_SUPABASE_PROJECT_REF != '' && secrets.NEXT_PUBLIC_SUPABASE_URL != '' && secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY != '' && secrets.SUPABASE_SERVICE_ROLE_KEY != '' }}
+           if: ${{ env.SUPABASE_ACCESS_TOKEN != '' && env.TEST_SUPABASE_PROJECT_REF != '' && env.NEXT_PUBLIC_SUPABASE_URL != '' && env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
            run: bunx playwright test
 
          - name: Upload Playwright report
-           if: ${{ failure() && secrets.SUPABASE_ACCESS_TOKEN != '' && secrets.TEST_SUPABASE_PROJECT_REF != '' }}
+           if: ${{ failure() && env.SUPABASE_ACCESS_TOKEN != '' && env.TEST_SUPABASE_PROJECT_REF != '' }}
            uses: actions/upload-artifact@v4
            with:
               name: playwright-report
