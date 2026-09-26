@@ -10,6 +10,8 @@ import { getOptionalUser } from '../getAuthUser';
 export async function getReels(params: { cursor?: string | null }) {
    const { cursor } = validate(CursorNullableSchema, params);
    const { supabase, user } = await getOptionalUser();
+   if (!supabase) return [];
+
    const hideAi = user ? await getHideAiContent() : false;
 
    const { data, error } = await reelsQuery(supabase, user?.id, cursor, hideAi);
