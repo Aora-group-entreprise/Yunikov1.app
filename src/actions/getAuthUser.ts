@@ -1,14 +1,42 @@
 'use server';
 import 'server-only';
-import { getCachedUser, getRequestClient } from '../lib/supabase/getCachedUser';
 
-export async function getAuthUser() {
-   const [supabase, user] = await Promise.all([getRequestClient(), getCachedUser()]);
-   if (!user) throw new Error('Unauthorized');
-   return { supabase, user };
-}
+import { cache } from 'react';
+import { getYunikoServerUser } from '../lib/yuniko/server-auth';
+import { getRequestClient } from '../lib/supabase/getCachedUser';
 
-export async function getOptionalUser() {
-   const [supabase, user] = await Promise.all([getRequestClient(), getCachedUser()]);
-   return { supabase, user };
-}
+export const getAuthUser = cache(async () => {
+   const yunikoUser = await getYunikoServerUser();
+   if (!yunikoUser) throw new Error('Unauthorized');
+
+   const authUserId = yunikoUser.authUserId;
+   if (!authUserId) {
+      throw new Error('Yuniko account is not linked to a Supabase profile');
+   }
+
+   const supabase = await getRequestClient();
+   return {
+      supabase,
+      user: {
+         id: authUserId,
+         username: yunikoUser.username,
+         email: null,
+         user_metadata: {
+            username: yunikoUser.username,
+            full_name: yunikoUser.displayName,
+            avatar_url: yunikoUser.avatarUrl,
+         },
+      },
+      yunikoUser,
+   };
+});
+
+export const getOptionalUser = cache(async () => {
+   const yunikoUser = await getYunikoServerUser();
+   if (!yunikoUser?.authUserId) return { supabase: await getRequestClient(), user: null, yunikoUser: null };
+   return {
+      supabase: await getRequestClient(),
+      user: { id: yunikoUser.authUserId, username: yunikoUser.username },
+      yunikoUser,
+   };
+});
