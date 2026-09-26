@@ -13,6 +13,7 @@ export const getCachedUser = cache(async () => {
       id: user.authUserId,
       username: user.username,
       email: null,
+      is_anonymous: false,
       user_metadata: {
          username: user.username,
          full_name: user.displayName,

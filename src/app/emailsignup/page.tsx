@@ -1,7 +1,7 @@
-import EmailSignUpPage from '@/src/pageComponents/EmailSignup';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default function EmailSignup() {
-   return <EmailSignUpPage />;
+   redirect('/login');
 }
