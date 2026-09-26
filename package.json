@@ -15,7 +15,7 @@
       "test:e2e": "bun --env-file=.env.test run build && bunx playwright test",
       "test:e2e:ui": "bunx playwright test --ui",
       "test:e2e:report": "bunx playwright show-report",
-      "db:types": "bunx supabase gen types typescript --project-id pggvzapkivjgsybyzjok > src/types/database.ts",
+      "db:types": "bunx supabase gen types typescript --project-id pqjrmtkfgwoocbvmwbby > src/types/database.ts",
       "seed:all": "bun run scripts/seed/all.ts",
       "seed:generate": "bun run scripts/seed/generate.ts",
       "seed:process": "bun run scripts/seed/process.ts",
