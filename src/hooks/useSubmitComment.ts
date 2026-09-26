@@ -23,7 +23,7 @@ export function useSubmitComment(postId: string, commentsKey: QueryKey) {
             parent_id: parentId ?? null,
             is_ai: false,
             comment_likes: [],
-            user: { id: authUser.id, username: authUser.username, avatar_url: authUser.avatar_url },
+            user: { id: authUser.id, username: authUser.username, avatar_url: authUser.avatarUrl },
          };
 
          if (parentId) {
