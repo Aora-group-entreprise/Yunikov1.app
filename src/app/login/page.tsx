@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import LoginPage from '@/src/pageComponents/Login';
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 export default function Login() {
    return (

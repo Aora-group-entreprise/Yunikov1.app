@@ -5,6 +5,8 @@ import MainNavbar from '../components/MainNavbar';
 import { createServerClient } from '../lib/supabase/server';
 import { styles } from './not-found.stylex';
 
+export const dynamic = 'force-dynamic';
+
 export default async function NotFound() {
    const supabase = await createServerClient();
    const {
