@@ -2,16 +2,13 @@ import * as stylex from '@stylexjs/stylex';
 import Link from 'next/link';
 import AuthPagesFooter from '@/src/components/AuthPagesFooter';
 import MainNavbar from '../components/MainNavbar';
-import { createServerClient } from '../lib/supabase/server';
+import { getYunikoServerUser } from '../lib/yuniko/server-auth';
 import { styles } from './not-found.stylex';
 
 export const dynamic = 'force-dynamic';
 
 export default async function NotFound() {
-   const supabase = await createServerClient();
-   const {
-      data: { user },
-   } = await supabase.auth.getUser();
+   const user = await getYunikoServerUser();
 
    return (
       <div {...stylex.props(styles.page)}>
