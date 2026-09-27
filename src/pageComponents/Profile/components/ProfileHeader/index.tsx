@@ -1,7 +1,6 @@
 'use client';
 
 import * as stylex from '@stylexjs/stylex';
-import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { BiLink } from 'react-icons/bi';
 import { MdVerified } from 'react-icons/md';
@@ -10,10 +9,7 @@ import FollowButton from '@/src/components/FollowButton';
 import NoteBubble from '@/src/components/NoteBubble';
 import UnsplashAttribution from '@/src/components/UnsplashAttribution';
 import UserAvatar from '@/src/components/UserAvatar';
-import { queryKeys } from '@/src/lib/queryKeys';
-import { supabase } from '@/src/lib/supabase/client';
 import type { FollowState } from '@/src/queries/followStatus';
-import { getProfileStats } from '@/src/queries/profileStats';
 import { useFollowListModal, useNewNoteModalStore } from '@/src/store/createModalStore';
 import { parseUnsplashAttribution } from '@/src/types/unsplash';
 import { colors } from '../../../../styles/tokens.stylex';
@@ -62,15 +58,8 @@ export default function ProfileHeader({
       following: userProfile.following?.[0]?.count ?? 0,
    };
 
-   const { data: stats } = useQuery({
-      queryKey: queryKeys.profileStats(userProfile.id),
-      queryFn: () => getProfileStats(supabase, userProfile.id),
-      initialData: initialStats,
-      staleTime: 30_000,
-   });
-
-   const followersCount = stats?.followers ?? initialStats.followers;
-   const followingCount = stats?.following ?? initialStats.following;
+   const followersCount = initialStats.followers;
+   const followingCount = initialStats.following;
 
    const openFollowList = useFollowListModal(state => state.open);
    const openNoteModal = useNewNoteModalStore(s => s.open);

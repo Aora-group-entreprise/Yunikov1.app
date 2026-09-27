@@ -1,13 +1,13 @@
-import { getAuthProfile } from '@/src/lib/supabase/getAuthProfile';
+import { getYunikoServerUser } from '@/src/lib/yuniko/server-auth';
 import ProfilePage from '@/src/pageComponents/Profile';
 import { loadProfilePage } from './[username]/loadProfilePage';
 
 export default async function Profile() {
-   const profile = await getAuthProfile();
+   const user = await getYunikoServerUser();
 
-   if (!profile) throw new Error('Profile not found');
+   if (!user) throw new Error('Unauthorized');
 
-   const result = await loadProfilePage(profile.username, { includeSaved: true });
+   const result = await loadProfilePage(user.username, { includeSaved: true });
 
    return <ProfilePage {...result} isOwnProfile />;
 }

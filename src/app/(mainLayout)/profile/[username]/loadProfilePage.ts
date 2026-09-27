@@ -1,43 +1,122 @@
-import { getUserNote } from '@/src/actions/notes/getUserNote';
-import { getRepostedPosts } from '@/src/actions/post/getRepostedPosts';
-import { getSavedPosts } from '@/src/actions/post/saves/getSavedPosts';
-import { getUserProfileWithPosts } from '@/src/actions/profile/getUserProfileWithPosts';
-import { getRingState } from '@/src/actions/story/getRingState';
-import { getUserHighlights } from '@/src/actions/story/getUserHighlights';
-import { getAuthProfile } from '@/src/lib/supabase/getAuthProfile';
+import { cookies } from 'next/headers';
+import { getYunikoServerUser } from '@/src/lib/yuniko/server-auth';
+import { yunikoApiFetch } from '@/src/lib/yuniko/api';
+import type { ProfileWithPosts } from '@/src/actions/profile/getUserProfileWithPosts';
+
+type ApiProfileResponse = {
+   user: {
+      id: number | string;
+      username: string;
+      displayName?: string | null;
+      avatarUrl?: string | null;
+      bio?: string | null;
+      website?: string | null;
+      country?: string | null;
+      verificationStatus?: string | null;
+   };
+   posts: Array<Record<string, any>>;
+   stats: { posts: number; followers: number; following: number };
+   following: boolean;
+   privateAccount: boolean;
+};
+
+async function fetchProfileFromYuniko(username: string): Promise<ApiProfileResponse> {
+   const user = await getYunikoServerUser();
+   if (!user) throw new Error('Unauthorized');
+
+   const response = await yunikoApiFetch(
+      `/users/by-username/${encodeURIComponent(username)}`,
+      { headers: { cookie: (await cookies()).toString() } },
+   );
+
+   if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`Yuniko profile API failed (${response.status}): ${body || response.statusText}`);
+   }
+
+   return response.json();
+}
+
+function toProfile(data: ApiProfileResponse['user'], stats: ApiProfileResponse['stats']) {
+   return {
+      id: String(data.id),
+      username: data.username,
+      full_name: data.displayName ?? null,
+      avatar_url: data.avatarUrl ?? null,
+      avatar_attribution: null,
+      bio: data.bio ?? null,
+      website: data.website ?? null,
+      gender: null,
+      hide_ai_content: false,
+      is_verified: data.verificationStatus === 'verified',
+      is_private: false,
+      followers: [{ count: stats.followers }],
+      following: [{ count: stats.following }],
+   };
+}
+
+function toPost(post: Record<string, any>) {
+   return {
+      id: String(post.id),
+      type: post.type ?? 'image',
+      caption: post.caption ?? null,
+      created_at: post.createdAt instanceof Date ? post.createdAt.toISOString() : String(post.createdAt ?? new Date().toISOString()),
+      aspect_ratio: post.aspectRatio ?? null,
+      hide_likes: Boolean(post.hideLikes),
+      comments_off: Boolean(post.commentsOff),
+      location_name: post.locationName ?? null,
+      like_count: Number(post.likeCount ?? 0),
+      comment_count: Number(post.commentCount ?? 0),
+      repost_count: Number(post.repostCount ?? 0),
+      visible_comment_count: [{ count: Number(post.commentCount ?? 0) }],
+      likes: [],
+      saves: [],
+      reposts: [],
+      user: null,
+      collaborators: [],
+      images: (post.images ?? []).map((image: any) => ({
+         id: String(image.id),
+         url: image.url ?? null,
+         position: Number(image.position ?? 0),
+         width: image.width ?? null,
+         height: image.height ?? null,
+         blur_data_url: image.blurDataUrl ?? null,
+         alt_text: image.altText ?? null,
+         unsplash_attribution: image.unsplashAttribution ?? null,
+         tags: [],
+      })),
+      videos: (post.videos ?? []).map((video: any) => ({
+         id: String(video.id),
+         mux_playback_id: video.muxPlaybackId ?? null,
+         duration: video.duration ?? null,
+         position: Number(video.position ?? 0),
+         width: video.width ?? null,
+         height: video.height ?? null,
+      })),
+   };
+}
 
 export async function loadProfilePage(username: string, options?: { includeSaved?: boolean }) {
-   const [authProfile, { userProfile, posts, followStatus }] = await Promise.all([
-      getAuthProfile(),
-      getUserProfileWithPosts({ username }),
+   const [authUser, profileData] = await Promise.all([
+      getYunikoServerUser(),
+      fetchProfileFromYuniko(username),
    ]);
 
-   const isOwnProfile = authProfile?.username === username;
-   const fetchSaved = options?.includeSaved || isOwnProfile;
+   if (!authUser) throw new Error('Unauthorized');
 
-   const notePromise = getUserNote({ userId: userProfile.id });
-   const ringStatePromise = getRingState({ targetUserId: userProfile.id });
-   const highlightsPromise = getUserHighlights({ userId: userProfile.id });
-   const repostedPostsPromise = getRepostedPosts({ userId: userProfile.id });
-   const savedPostsPromise = fetchSaved ? getSavedPosts() : Promise.resolve(undefined);
-
-   const [note, ringState, highlights, savedPosts, repostedPosts] = await Promise.all([
-      notePromise,
-      ringStatePromise,
-      highlightsPromise,
-      savedPostsPromise,
-      repostedPostsPromise,
-   ]);
+   const userProfile = toProfile(profileData.user, profileData.stats);
+   const posts = profileData.posts.map(toPost) as ProfileWithPosts['posts'];
+   const isOwnProfile = authUser.username === username;
 
    return {
       userProfile,
       posts,
-      followStatus,
+      followStatus: (profileData.following ? 'following' : 'none') as ProfileWithPosts['followStatus'],
       isOwnProfile,
-      note,
-      ringState,
-      highlights,
-      savedPosts,
-      repostedPosts,
+      note: null,
+      ringState: { hasStories: false, allStoriesViewed: false },
+      highlights: [],
+      savedPosts: [],
+      repostedPosts: [],
    };
 }
