@@ -8,6 +8,10 @@
       "directory": ".open-next/assets",
       "binding": "ASSETS"
    },
+   "vars": {
+      "SUPABASE_URL": "https://pqjrmtkfgwoocbvmwbby.supabase.co",
+      "YUNIKO_APP_URL": "https://yunikov1-app.lafatriniainaallane.workers.dev"
+   },
    "observability": {
       "enabled": true,
       "head_sampling_rate": 1,
