@@ -37,7 +37,11 @@ async function fetchProfileFromYuniko(username: string): Promise<ApiProfileRespo
    return response.json();
 }
 
-function toProfile(data: ApiProfileResponse['user'], stats: ApiProfileResponse['stats']) {
+function toProfile(
+   data: ApiProfileResponse['user'],
+   stats: ApiProfileResponse['stats'],
+   posts: ProfileWithPosts['posts'],
+) {
    return {
       id: String(data.id),
       username: data.username,
@@ -52,6 +56,7 @@ function toProfile(data: ApiProfileResponse['user'], stats: ApiProfileResponse['
       is_private: false,
       followers: [{ count: stats.followers }],
       following: [{ count: stats.following }],
+      posts,
    };
 }
 
@@ -104,8 +109,8 @@ export async function loadProfilePage(username: string, options?: { includeSaved
 
    if (!authUser) throw new Error('Unauthorized');
 
-   const userProfile = toProfile(profileData.user, profileData.stats);
    const posts = profileData.posts.map(toPost) as ProfileWithPosts['posts'];
+   const userProfile = toProfile(profileData.user, profileData.stats, posts);
    const isOwnProfile = authUser.username === username;
 
    return {
