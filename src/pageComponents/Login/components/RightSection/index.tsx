@@ -36,6 +36,34 @@ interface SignupData {
 
 const GRADIENT = 'linear-gradient(135deg, #FF006E 0%, #8B00FF 100%)';
 
+async function readAuthError(response: Response, fallback: string): Promise<string> {
+   const contentType = response.headers.get('content-type') ?? '';
+   const raw = await response.text();
+   let message = '';
+
+   if (raw) {
+      if (contentType.includes('application/json')) {
+         try {
+            const data = JSON.parse(raw) as {
+               error?: unknown;
+               message?: unknown;
+               detail?: unknown;
+            };
+            const candidate = data.error ?? data.message ?? data.detail;
+            if (typeof candidate === 'string') message = candidate;
+         } catch {
+            // Fall back to the raw response below.
+         }
+      }
+
+      if (!message) message = raw.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+   }
+
+   const status = response.status ? `HTTP ${response.status}` : 'HTTP unknown';
+   if (message) return `${fallback}: ${message} (${status})`;
+   return `${fallback} (${status})`;
+}
+
 async function processAvatar(file: File): Promise<string> {
    return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -201,15 +229,20 @@ export default function RightSection({
             method: 'POST',
             body: JSON.stringify({ username: username.trim(), password }),
          });
-         const data = await response.json().catch(() => ({}));
          if (!response.ok) {
-            setError(data.error ?? 'Login failed');
+            setError(await readAuthError(response, 'Login failed'));
+            return;
+         }
+         const data = await response.json().catch(() => ({}));
+         if (!data.user) {
+            setError('Login failed: the server returned no user (HTTP 200)');
             return;
          }
          login(data.user as YunikoAuthUser);
          router.replace('/');
-      } catch {
-         setError('Network error. Please try again.');
+      } catch (error) {
+         const message = error instanceof Error ? error.message : String(error);
+         setError(`Login request error: ${message}`);
       } finally {
          setLoading(false);
       }
@@ -272,15 +305,20 @@ export default function RightSection({
                avatarUrl: signup.avatarUrl,
             }),
          });
-         const data = await response.json().catch(() => ({}));
          if (!response.ok) {
-            setError(data.error ?? 'Registration failed');
+            setError(await readAuthError(response, 'Registration failed'));
+            return;
+         }
+         const data = await response.json().catch(() => ({}));
+         if (!data.user) {
+            setError('Registration failed: the server returned no user (HTTP 200)');
             return;
          }
          login(data.user as YunikoAuthUser);
          setSignupStep(4);
-      } catch {
-         setError('Network error. Please try again.');
+      } catch (error) {
+         const message = error instanceof Error ? error.message : String(error);
+         setError(`Registration request error: ${message}`);
       } finally {
          setLoading(false);
       }
