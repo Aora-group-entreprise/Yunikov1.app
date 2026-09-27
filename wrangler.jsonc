@@ -10,6 +10,8 @@
    },
    "vars": {
       "SUPABASE_URL": "https://pqjrmtkfgwoocbvmwbby.supabase.co",
+      "NEXT_PUBLIC_SUPABASE_URL": "https://pqjrmtkfgwoocbvmwbby.supabase.co",
+      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_EcRG6tql7D2aWdCrzq3yEw_R_AjEHV0",
       "YUNIKO_APP_URL": "https://yunikov1-app.lafatriniainaallane.workers.dev",
       "YUNIKO_API_URL": "https://yuniko-api.lafatriniainaallane.workers.dev"
    },
