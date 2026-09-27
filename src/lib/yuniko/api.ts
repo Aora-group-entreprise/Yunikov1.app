@@ -23,19 +23,8 @@ export async function yunikoApiFetch(path: string, options: RequestInit = {}) {
   const normalized = path.startsWith('/') ? path : `/${path}`;
   const headers = new Headers(options.headers);
   if (!headers.has('Content-Type') && options.body) headers.set('Content-Type', 'application/json');
-
-  const isAuthRequest = normalized === '/auth' || normalized.startsWith('/auth/');
-  const url =
-    isAuthRequest && typeof window !== 'undefined'
-      ? `/api${normalized}`
-      : `${API_BASE_URL}/api${normalized}`;
-
-  return fetch(url, {
-    ...options,
-    headers,
-    credentials: 'include',
-    cache: 'no-store',
-  });
+  const url = typeof window !== 'undefined' ? `/api${normalized}` : `${API_BASE_URL}/api${normalized}`;
+  return fetch(url, { ...options, headers, credentials: 'include', cache: 'no-store' });
 }
 
 export async function yunikoApiJson<T>(path: string, options: RequestInit = {}): Promise<T> {
