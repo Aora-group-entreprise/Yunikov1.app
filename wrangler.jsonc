@@ -1,6 +1,6 @@
 {
    "$schema": "./node_modules/wrangler/config-schema.json",
-   "name": "yunikov1-app",
+   "name": "yuniko-api",
    "main": ".open-next/worker.js",
    "compatibility_date": "2026-09-26",
    "compatibility_flags": ["nodejs_compat"],
