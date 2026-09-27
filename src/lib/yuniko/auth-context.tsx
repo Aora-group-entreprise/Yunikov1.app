@@ -52,17 +52,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!active) return;
         if (response.ok) {
           storeUser(await response.json() as YunikoAuthUser);
-        } else if (response.status === 401) {
-          storeUser(null);
         } else {
-          const cached = localStorage.getItem(USER_KEY);
-          if (cached) storeUser(normalizeYunikoAuthUser(JSON.parse(cached)));
+          // The JWT API is the source of truth. Never authenticate from a stale
+          // localStorage identity when /auth/me is unavailable or unauthorized.
+          storeUser(null);
         }
       } catch {
-        const cached = localStorage.getItem(USER_KEY);
-        if (cached && active) {
-          try { storeUser(normalizeYunikoAuthUser(JSON.parse(cached))); } catch { storeUser(null); }
-        }
+        // If the auth endpoint cannot be reached, fail closed instead of
+        // treating a cached user as authenticated.
+        if (active) storeUser(null);
       } finally {
         if (active) setIsLoading(false);
       }
