@@ -1,6 +1,6 @@
 {
    "$schema": "./node_modules/wrangler/config-schema.json",
-   "name": "yuniko-api",
+   "name": "yunikov1-app",
    "main": ".open-next/worker.js",
    "compatibility_date": "2026-09-26",
    "compatibility_flags": ["nodejs_compat"],
@@ -10,7 +10,8 @@
    },
    "vars": {
       "SUPABASE_URL": "https://pqjrmtkfgwoocbvmwbby.supabase.co",
-      "YUNIKO_APP_URL": "https://yunikov1-app.lafatriniainaallane.workers.dev"
+      "YUNIKO_APP_URL": "https://yunikov1-app.lafatriniainaallane.workers.dev",
+      "YUNIKO_API_URL": "https://yuniko-api.lafatriniainaallane.workers.dev"
    },
    "observability": {
       "enabled": true,
