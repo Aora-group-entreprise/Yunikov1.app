@@ -1,10 +1,10 @@
 import { NextRequest } from "next/server";
 
-const API_BASE_URL = (
+const API_BASE_URL = new URL(
    process.env.YUNIKO_API_URL ??
    process.env.NEXT_PUBLIC_YUNIKO_API_URL ??
    "https://yuniko-api.lafatriniainaallane.workers.dev"
-).replace(/\/+$/, "");
+).origin;
 
 async function proxy(request: NextRequest) {
    const url = new URL(request.url);
