@@ -35,6 +35,9 @@ export type PostsWithMedia = Array<{
    comment_count?: number;
    repost_count?: number;
    hide_likes?: boolean;
+   likes: Array<{ user_id: string }>;
+   saves: Array<{ user_id: string }>;
+   reposts: Array<{ user_id: string }>;
    user?: {
       id: string;
       username?: string;
