@@ -1,13 +1,10 @@
 import type { QueryData, SupabaseClient } from '@supabase/supabase-js';
 import { DB_NOW } from '@/src/lib/dbTime';
 import type { Database } from '@/src/types/database';
-import { parseUnsplashAttribution } from '@/src/types/unsplash';
 
 export const ACTIVE_STORIES_SELECT = `
-   id, created_at, user_id,
-   profiles!stories_user_id_fkey(username, avatar_url),
-   story_images(url, blur_data_url, unsplash_attribution),
-   story_videos(mux_playback_id),
+   id, created_at, user_id, media_url, media_type,
+   users!stories_user_id_fkey(username, avatar_url),
    story_views(viewer_id),
    story_reactions(user_id)
 `;
@@ -39,27 +36,27 @@ export type ActiveStories = QueryData<ReturnType<typeof activeStoriesQuery>>;
 export type ActiveStory = ActiveStories[number];
 
 interface StoryMediaRow {
-   story_images: { url: string; blur_data_url: string | null; unsplash_attribution: unknown }[];
-   story_videos: { mux_playback_id: string | null }[];
+   media_url: string | null;
+   media_type: string | null;
 }
 
 export function extractStoryMedia(row: StoryMediaRow) {
-   if (row.story_images.length > 0) {
-      return {
-         type: 'image' as const,
-         url: row.story_images[0].url,
-         blurDataUrl: row.story_images[0].blur_data_url ?? null,
-         unsplashAttribution: parseUnsplashAttribution(row.story_images[0].unsplash_attribution),
-      };
-   }
-   if (row.story_videos.length > 0 && row.story_videos[0].mux_playback_id) {
+   if (!row.media_url) return null;
+
+   if (row.media_type === 'video') {
       return {
          type: 'video' as const,
-         url: row.story_videos[0].mux_playback_id,
+         url: row.media_url,
          blurDataUrl: null,
       };
    }
-   return null;
+
+   return {
+      type: 'image' as const,
+      url: row.media_url,
+      blurDataUrl: null,
+      unsplashAttribution: null,
+   };
 }
 
 export async function getStoryRingState(

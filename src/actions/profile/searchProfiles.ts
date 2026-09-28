@@ -1,6 +1,7 @@
 'use server';
 import 'server-only';
 import { getHideAiContent } from '@/src/lib/getHideAiContent';
+import { getSupabaseAdmin } from '@/src/lib/yuniko/server-api';
 import { throwIfError } from '@/src/lib/unwrap';
 import { SearchProfilesSchema, validate } from '@/src/lib/validation';
 import { getOptionalUser } from '../getAuthUser';
@@ -11,7 +12,8 @@ export async function searchProfiles(options: {
    excludeId?: string;
 }) {
    const validated = validate(SearchProfilesSchema, options);
-   const { supabase, user } = await getOptionalUser();
+   const { user } = await getOptionalUser();
+   const supabase = getSupabaseAdmin();
 
    // The authenticated session belongs to the Yuniko API host. The Next.js
    // server cannot see that HttpOnly cookie, so an anonymous server request

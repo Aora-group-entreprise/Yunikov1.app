@@ -10,6 +10,7 @@ export interface YunikoAuthUser {
   age: number | null;
   bio: string;
   website: string | null;
+  verificationStatus: string;
   hide_ai_content?: boolean;
   createdAt: string;
 }

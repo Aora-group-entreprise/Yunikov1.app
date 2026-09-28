@@ -63,7 +63,7 @@ export function toPublicUser(user: DbUser): YunikoUser {
 function bytesToBase64Url(bytes: Uint8Array) {
   let binary = '';
   for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/g, '');
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
 }
 
 function base64UrlToBytes(value: string) {
@@ -78,7 +78,7 @@ async function hmacSign(input: string, secret: string) {
     new TextEncoder().encode(secret),
     { name: 'HMAC', hash: 'SHA-256' },
     false,
-    ['sign', 'verify'],
+    ['sign'],
   );
   return new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(input)));
 }
@@ -111,6 +111,11 @@ export async function verifySessionToken(token: string | null) {
   if (parts.length !== 3) return null;
 
   const [header, payload, signature] = parts;
+  const expectedHeader = bytesToBase64Url(
+    new TextEncoder().encode(JSON.stringify({ alg: 'HS256', typ: 'JWT' })),
+  );
+  if (header !== expectedHeader) return null;
+
   const expected = await hmacSign(header + '.' + payload, secret);
   const actual = base64UrlToBytes(signature);
   if (actual.length !== expected.length) return null;
@@ -133,12 +138,10 @@ export async function verifySessionToken(token: string | null) {
 
 export function getSessionToken(request: Request) {
   const authorization = request.headers.get('authorization') ?? '';
-  if (authorization.toLowerCase().startsWith('bearer ')) {
-    return authorization.slice(7).trim();
-  }
+  if (authorization.toLowerCase().startsWith('bearer ')) return authorization.slice(7).trim();
 
   const cookie = request.headers.get('cookie') ?? '';
-  const match = cookie.match(/(?:^|;\\s*)yuniko_session=([^;]+)/);
+  const match = cookie.match(/(?:^|;\s*)yuniko_session=([^;]+)/);
   return match ? decodeURIComponent(match[1]) : null;
 }
 

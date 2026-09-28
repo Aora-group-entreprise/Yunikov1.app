@@ -1,5 +1,6 @@
 'use server';
 import 'server-only';
+import { getSupabaseAdmin } from '@/src/lib/yuniko/server-api';
 import {
    getBatchFollowStatuses as queryBatchFollowStatuses,
    getFollowStatus as queryFollowStatus,
@@ -7,7 +8,8 @@ import {
 import { getOptionalUser } from '../getAuthUser';
 
 export async function getFollowStatus(targetUserId: string) {
-   const { supabase, user } = await getOptionalUser();
+   const { user } = await getOptionalUser();
+   const supabase = getSupabaseAdmin();
    if (!user || !supabase) return 'none' as const;
 
    return queryFollowStatus(supabase, user.id, targetUserId);

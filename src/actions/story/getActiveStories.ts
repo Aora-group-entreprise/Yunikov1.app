@@ -2,13 +2,15 @@
 import 'server-only';
 
 import { getHideAiContent } from '@/src/lib/getHideAiContent';
+import { getSupabaseAdmin } from '@/src/lib/yuniko/server-api';
 import { throwIfError } from '@/src/lib/unwrap';
 import { activeStoriesQuery, extractStoryMedia } from '@/src/queries/stories';
 import type { UnsplashAttribution } from '../../types/unsplash';
 import { getOptionalUser } from '../getAuthUser';
 
 export async function getActiveStories() {
-   const { supabase, user } = await getOptionalUser();
+   const { user } = await getOptionalUser();
+   const supabase = getSupabaseAdmin();
 
    // Yuniko API owns authentication. The API session is not a Supabase Auth
    // session on the Next.js server, so do not issue an RLS-protected stories
@@ -47,13 +49,13 @@ export async function getActiveStories() {
    const reactedStoryIds: string[] = [];
 
    for (const row of data ?? []) {
-      const profile = row.profiles;
+      const profile = row.users as unknown as { username: string; avatar_url: string | null } | null;
       if (!profile) continue;
 
       const views = row.story_views;
       const reactions = row.story_reactions;
 
-      const media = extractStoryMedia(row);
+      const media = extractStoryMedia(row as unknown as { media_url: string | null; media_type: string | null });
       if (!media) continue;
 
       const isViewed = currentUserId !== null && views.some(v => v.viewer_id === currentUserId);

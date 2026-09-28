@@ -1,20 +1,16 @@
 import type { QueryData, SupabaseClient } from '@supabase/supabase-js';
 import { DB_NOW } from '@/src/lib/dbTime';
-import { PROFILE_LIST_SELECT, PROFILE_LIST_SELECT_BADGES } from '@/src/lib/profileSelect';
 import type { Database } from '@/src/types/database';
 import { scopePostEngagementToUser } from '@/src/utils/posts';
 
 export const POST_WITH_MEDIA_SELECT = `
-   id, type, caption, created_at, aspect_ratio, hide_likes, comments_off, location_name,
-   like_count, comment_count, repost_count,
-   visible_comment_count:comments(count),
+   id, user_id, caption, media_url, media_type, created_at,
+   location_name:location,
+   like_count:likes, comment_count:comments, repost_count:reposts,
    likes(user_id),
    saves(user_id),
-   reposts(user_id),
-   user:profiles!user_id(${PROFILE_LIST_SELECT_BADGES}),
-   collaborators:post_collaborators(user:profiles!user_id(${PROFILE_LIST_SELECT})),
-   images:post_images(id, url, position, width, height, blur_data_url, alt_text, unsplash_attribution, tags:post_image_tags(id, x, y, user:profiles!user_id(${PROFILE_LIST_SELECT}))),
-    videos:post_videos(id, mux_playback_id, duration, position, width, height)
+   user:users!posts_user_id_fkey(id, username, display_name, avatar_url),
+   images:post_media(id, url, position, width, height, blurhash, status)
 ` as const;
 
 export function postsWithMediaQuery(supabase: SupabaseClient<Database>) {
@@ -33,7 +29,7 @@ export function userRecentPostsQuery(supabase: SupabaseClient<Database>, userId:
    return supabase
       .from('posts')
       .select(
-         'id, images:post_images(url, position), videos:post_videos(mux_playback_id, position)',
+         'id, images:post_media(url, position), videos:post_media(url, position)',
       )
       .eq('user_id', userId)
       .lte('created_at', DB_NOW)
@@ -54,18 +50,8 @@ export function reelsQuery(
 ) {
    let query = supabase
       .from('posts')
-      .select(
-         `
-            id, caption, created_at, aspect_ratio, hide_likes, comments_off,
-            like_count, comment_count, repost_count, location_name,
-            likes(user_id),
-            saves(user_id),
-            reposts(user_id),
-            user:profiles!user_id(${PROFILE_LIST_SELECT_BADGES}),
-            videos:post_videos(id, mux_playback_id, duration, position, width, height)
-         `,
-      )
-      .eq('type', 'reel')
+      .select(POST_WITH_MEDIA_SELECT)
+      .eq('media_type', 'video')
       .lte('created_at', DB_NOW)
       .order('created_at', { ascending: false })
       .limit(REELS_PAGE_SIZE);
