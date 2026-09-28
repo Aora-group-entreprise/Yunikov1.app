@@ -63,7 +63,7 @@ export default function ExploreGrid({ posts, emptyState }: ExploreGridProps) {
                   key={post.id}
                   type="button"
                   {...stylex.props(styles.item, isTall && styles.itemTall)}
-                  onMouseEnter={() => setHoveredId(post.id)}
+                  onMouseEnter={() => setHoveredId(String(post.id))}
                   onMouseLeave={() => setHoveredId(null)}
                   onClick={() => open(post.id, { returnPath: pathname })}
                >

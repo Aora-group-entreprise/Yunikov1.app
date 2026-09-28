@@ -25,28 +25,28 @@ export function postsWithMediaQuery(supabase: SupabaseClient<Database>) {
 
 export type PostsWithMedia = Array<{
    [key: string]: any;
-   id: string | number;
+   id: string;
    user_id: string;
    created_at: string | null;
    caption?: string | null;
    type?: string;
    aspect_ratio: string;
    location_name?: string | null;
-   like_count?: number;
-   comment_count?: number;
-   repost_count?: number;
-   hide_likes?: boolean;
+   like_count: number;
+   comment_count: number;
+   repost_count: number;
+   hide_likes: boolean;
    likes: Array<{ user_id: string }>;
    saves: Array<{ user_id: string }>;
    reposts: Array<{ user_id: string }>;
    user?: {
       id: string;
-      username?: string;
+      username: string;
       full_name?: string | null;
       avatar_url?: string | null;
    } | null;
    images: Array<{
-      id: string | number;
+      id: string;
       url: string | null;
       position: number;
       width?: number | null;
@@ -57,7 +57,7 @@ export type PostsWithMedia = Array<{
       tags?: unknown[];
    }>;
    videos: Array<{
-      id: string | number;
+      id: string;
       mux_playback_id: string | null;
       duration?: number | null;
       position: number;
