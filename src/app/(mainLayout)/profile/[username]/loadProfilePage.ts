@@ -21,11 +21,11 @@ type ApiProfileResponse = {
 
 function getCurrentApiBaseUrl(requestHeaders: Headers): string {
    const configured = process.env.NEXT_PUBLIC_YUNIKO_API_URL?.trim();
-   if (configured) return configured.replace(/\\/+$/, '').replace(/\\/api$/, '');
+   if (configured) return configured.replace(/\/+$/, '').replace(/\/api$/, '');
    const host = requestHeaders.get('host');
    if (host) {
       const protocol = requestHeaders.get('x-forwarded-proto') ?? 'https';
-      return \`${protocol}://${host}\`;
+      return `${protocol}://${host}`;
    }
    return 'https://yunikov1-app-api.lafatriniainaallane.workers.dev';
 }
