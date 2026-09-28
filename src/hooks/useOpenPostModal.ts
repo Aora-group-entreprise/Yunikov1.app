@@ -28,11 +28,14 @@ export function useOpenPostModal() {
       } else {
          const options = usernameOrParams as OpenPostModalParams | undefined;
          open(postOrId, { initialImageIndex: options?.initialImageIndex, returnPath: pathname });
-         window.history.pushState(
-            { postModal: true },
-            '',
-            `/profile/${postOrId.user.username}/${postOrId.id}`,
-         );
+         const username = postOrId.user?.username;
+         if (username) {
+            window.history.pushState(
+               { postModal: true },
+               '',
+               `/profile/${username}/${postOrId.id}`,
+            );
+         }
       }
    }
 

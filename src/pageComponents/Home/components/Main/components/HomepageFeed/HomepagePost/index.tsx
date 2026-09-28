@@ -77,21 +77,27 @@ export default function HomepagePost({ post: initialPost, index }: HomepagePostP
    const isReposted = post.reposts?.some(r => r.user_id === currentUser?.id) ?? false;
    const isSaved = post.saves?.some(s => s.user_id === currentUser?.id);
 
-   const isOwner = post.user.id === currentUser?.id;
-
    if (!post) return null;
+
+   const owner = post.user ?? {
+      id: post.user_id,
+      username: 'user',
+      full_name: null,
+      avatar_url: null,
+   };
+   const isOwner = owner.id === currentUser?.id;
 
    return (
       <div {...stylex.props(styles.root)}>
          <div {...stylex.props(styles.header)}>
             <UserAvatar
-               src={post.user.avatar_url}
-               alt={post.user.username}
+               src={owner.avatar_url}
+               alt={owner.username}
                size={32}
-               username={post.user.username}
-               userId={post.user.id}
+               username={owner.username}
+               userId={owner.id}
             />
-            <OtherUserUsername style={styles.topUsername} userProfile={post.user} />
+            <OtherUserUsername style={styles.topUsername} userProfile={owner} />
             <span {...stylex.props(styles.separator)}>•</span>
             <span {...stylex.props(styles.createdAt)} suppressHydrationWarning>
                {post.created_at ? formatRelativeTimeShortUnit(post.created_at) : ''}
@@ -183,7 +189,7 @@ export default function HomepagePost({ post: initialPost, index }: HomepagePostP
          <div {...stylex.props(styles.descriptionContainer)}>
             {post.caption && (
                <>
-                  <OtherUserUsername style={styles.bottomUsername} userProfile={post.user} />
+                  <OtherUserUsername style={styles.bottomUsername} userProfile={owner} />
                   <span {...stylex.props(styles.description, sharedStyles.multilineText)}>
                      {' '}
                      {post.caption}

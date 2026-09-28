@@ -67,7 +67,9 @@ export default function PostFullViewModal() {
             <Dialog.Content
                {...stylex.props(styles.content, suppressAnimation && styles.noAnimation)}
             >
-               <HiddenDialogTitle>Full view of {post.user.username} post</HiddenDialogTitle>
+               <HiddenDialogTitle>
+                  Full view of {post.user?.username ?? 'user'} post
+               </HiddenDialogTitle>
                <HiddenDialogDescription>
                   {post.caption ?? 'Post has no caption'}
                </HiddenDialogDescription>
