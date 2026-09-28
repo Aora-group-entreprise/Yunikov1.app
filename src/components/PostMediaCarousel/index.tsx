@@ -45,12 +45,37 @@ function mergeMedia(post: PostWithMedia): UnifiedMedia[] {
          blurDataURL: img.blur_data_url ?? undefined,
          altText: formatAltText(img.alt_text, post, i),
          unsplashAttribution: parseUnsplashAttribution(img.unsplash_attribution),
-         tags: img.tags?.map(t => ({ id: t.id, x: t.x, y: t.y, username: t.user.username })) ?? [],
+         tags:
+            img.tags?.flatMap(tag => {
+               if (typeof tag !== 'object' || tag === null) return [];
+               const value = tag as {
+                  id?: string | number;
+                  x?: number;
+                  y?: number;
+                  user?: { username?: string | null };
+               };
+               if (
+                  value.id === undefined ||
+                  typeof value.x !== 'number' ||
+                  typeof value.y !== 'number' ||
+                  typeof value.user?.username !== 'string'
+               ) {
+                  return [];
+               }
+               return [
+                  {
+                     id: String(value.id),
+                     x: value.x,
+                     y: value.y,
+                     username: value.user.username,
+                  },
+               ];
+            }) ?? [],
       })) ?? [];
 
    const videos: UnifiedMedia[] =
       post.videos?.map(vid => ({
-         id: vid.mux_playback_id ?? vid.id,
+         id: String(vid.mux_playback_id ?? vid.id),
          type: 'video' as const,
          url: vid.mux_playback_id ?? '',
          position: vid.position,
