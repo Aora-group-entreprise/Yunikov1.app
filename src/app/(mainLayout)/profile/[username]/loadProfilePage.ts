@@ -87,7 +87,6 @@ function toPost(
          avatar_url: author.avatarUrl ?? null,
          is_verified: author.verificationStatus === 'verified',
       },
-      collaborators: [],
       images: (post.images ?? []).map((image: any) => ({
          id: String(image.id),
          url: image.url ?? null,
@@ -96,8 +95,6 @@ function toPost(
          height: image.height ?? null,
          blur_data_url: image.blurDataUrl ?? null,
          alt_text: image.altText ?? null,
-         unsplash_attribution: image.unsplashAttribution ?? null,
-         tags: [],
       })),
       videos: (post.videos ?? []).map((video: any) => ({
          id: String(video.id),
