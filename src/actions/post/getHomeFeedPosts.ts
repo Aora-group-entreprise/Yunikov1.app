@@ -30,21 +30,24 @@ type ApiFeedResponse = {
 };
 
 function getApiBaseUrl(requestHeaders: Headers): string {
+   const configured = (
+      process.env.YUNIKO_API_URL ??
+      process.env.NEXT_PUBLIC_YUNIKO_API_URL ??
+      ''
+   ).trim();
+
+   if (configured) {
+      return configured.replace(/\\/+$/, '').replace(/\\/api$/, '');
+   }
+
    const host = requestHeaders.get('host');
    if (host) {
       const protocol = requestHeaders.get('x-forwarded-proto') ?? 'https';
       return `${protocol}://${host}`;
    }
 
-   const configured = (
-      process.env.YUNIKO_API_URL ??
-      process.env.NEXT_PUBLIC_YUNIKO_API_URL ??
-      'https://yunikov1-app-api.lafatriniainaallane.workers.dev'
-   ).trim();
-
-   return configured.replace(/\/+$/, '').replace(/\/api$/, '');
+   return 'https://yunikov1-app-api.lafatriniainaallane.workers.dev';
 }
-
 function mapApiPost(post: ApiFeedPost): PostsWithMedia[number] {
    const id = String(post.id);
    const userId = String(post.userId);
