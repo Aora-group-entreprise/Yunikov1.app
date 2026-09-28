@@ -37,7 +37,10 @@ function getApiBaseUrl(requestHeaders: Headers): string {
    ).trim();
 
    if (configured) {
-      return configured.replace(/\\/+$/, '').replace(/\\/api$/, '');
+      let baseUrl = configured;
+      while (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
+      if (baseUrl.endsWith('/api')) baseUrl = baseUrl.slice(0, -4);
+      return baseUrl;
    }
 
    const host = requestHeaders.get('host');
