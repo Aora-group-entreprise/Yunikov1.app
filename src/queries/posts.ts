@@ -4,13 +4,14 @@ import type { Database } from '@/src/types/database';
 import { scopePostEngagementToUser } from '@/src/utils/posts';
 
 export const POST_WITH_MEDIA_SELECT = `
-   id, user_id, caption, media_url, media_type, created_at,
-   location_name:location,
-   like_count:likes, comment_count:comments, repost_count:reposts,
+   id, user_id, caption, type, created_at, location_name,
+   like_count, comment_count, repost_count, hide_likes,
    likes(user_id),
    saves(user_id),
-   user:users!posts_user_id_fkey(id, username, display_name, avatar_url),
-   images:post_media(id, url, position, width, height, blurhash, status)
+   reposts(user_id),
+   user:profiles!posts_user_id_fkey(id, username, full_name, avatar_url),
+   images:post_images(id, url, position, width, height, blur_data_url, alt_text, unsplash_attribution),
+   videos:post_videos(id, mux_playback_id, duration, position, width, height)
 ` as const;
 
 export function postsWithMediaQuery(supabase: SupabaseClient<Database>) {
@@ -22,14 +23,51 @@ export function postsWithMediaQuery(supabase: SupabaseClient<Database>) {
       .limit(10);
 }
 
-export type PostsWithMedia = QueryData<ReturnType<typeof postsWithMediaQuery>>;
+export type PostsWithMedia = Array<{
+   [key: string]: any;
+   id: string | number;
+   user_id: string;
+   created_at: string | null;
+   caption?: string | null;
+   type?: string;
+   location_name?: string | null;
+   like_count?: number;
+   comment_count?: number;
+   repost_count?: number;
+   hide_likes?: boolean;
+   user?: {
+      id: string;
+      username?: string;
+      full_name?: string | null;
+      avatar_url?: string | null;
+   } | null;
+   images?: Array<{
+      id: string | number;
+      url: string | null;
+      position: number;
+      width?: number | null;
+      height?: number | null;
+      blur_data_url?: string | null;
+      alt_text?: string | null;
+      unsplash_attribution?: unknown;
+      tags?: unknown[];
+   }>;
+   videos?: Array<{
+      id: string | number;
+      mux_playback_id: string | null;
+      duration?: number | null;
+      position: number;
+      width?: number | null;
+      height?: number | null;
+   }>;
+}>;
 export type PostWithMedia = PostsWithMedia[number];
 
 export function userRecentPostsQuery(supabase: SupabaseClient<Database>, userId: string) {
    return supabase
       .from('posts')
       .select(
-         'id, images:post_media(url, position), videos:post_media(url, position)',
+         'id, images:post_images(url, position), videos:post_videos(mux_playback_id, position)',
       )
       .eq('user_id', userId)
       .lte('created_at', DB_NOW)
@@ -51,14 +89,10 @@ export function reelsQuery(
    let query = supabase
       .from('posts')
       .select(POST_WITH_MEDIA_SELECT)
-      .eq('media_type', 'video')
+      .eq('type', 'video')
       .lte('created_at', DB_NOW)
       .order('created_at', { ascending: false })
       .limit(REELS_PAGE_SIZE);
-
-   if (hideAi) {
-      query = query.eq('is_ai', false);
-   }
 
    if (userId) {
       query = scopePostEngagementToUser(query, userId);
@@ -87,10 +121,6 @@ export function savedPostsQuery(
    query = scopePostEngagementToUser(query, userId, 'post');
 
    query = query.order('created_at', { ascending: false });
-
-   if (hideAi) {
-      query = query.eq('post.is_ai', false);
-   }
 
    return query;
 }

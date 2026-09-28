@@ -1,7 +1,6 @@
 'use server';
 import 'server-only';
 import { DB_NOW } from '@/src/lib/dbTime';
-import { getHideAiContent } from '@/src/lib/getHideAiContent';
 import { CursorSchema, validate } from '@/src/lib/validation';
 import { throwIfError } from '../../lib/unwrap';
 import type { PostsWithMedia } from '../../queries/posts';
@@ -27,7 +26,6 @@ export async function getExplorePosts(params: {
    const { variant, cursor } = validate(CursorSchema, params);
    const { supabase, user } = await getOptionalUser();
    if (!supabase) return { posts: [], nextCursor: null };
-   const hideAi = user ? await getHideAiContent() : false;
 
    let query = supabase
       .from('posts')
@@ -36,12 +34,11 @@ export async function getExplorePosts(params: {
       .order('created_at', { ascending: false });
 
    if (cursor) query = query.lt('created_at', cursor);
-   if (hideAi) query = query.eq('is_ai', false);
 
    if (!user) {
       const { data, error } = await query.limit(PAGE_SIZE);
       throwIfError({ error }, 'Failed to fetch explore feed');
-      const posts = data ?? [];
+      const posts = (data ?? []) as unknown as PostsWithMedia;
       return {
          posts: hideLikesForNonOwners(posts, undefined),
          nextCursor: nextCursorFrom(posts, PAGE_SIZE),
@@ -71,7 +68,7 @@ export async function getExplorePosts(params: {
 
    const { data, error } = await query.limit(PAGE_SIZE);
    throwIfError({ error }, 'Failed to fetch explore feed');
-   const posts = data ?? [];
+   const posts = (data ?? []) as unknown as PostsWithMedia;
    return {
       posts: hideLikesForNonOwners(posts, user.id),
       nextCursor: nextCursorFrom(posts, PAGE_SIZE),
