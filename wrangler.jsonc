@@ -8,6 +8,12 @@
       "directory": ".open-next/assets",
       "binding": "ASSETS"
    },
+   "services": [
+      {
+         "binding": "YUNIKO_API",
+         "service": "yuniko-api"
+      }
+   ],
    "vars": {
       "SUPABASE_URL": "https://pqjrmtkfgwoocbvmwbby.supabase.co",
       "NEXT_PUBLIC_SUPABASE_URL": "https://pqjrmtkfgwoocbvmwbby.supabase.co",

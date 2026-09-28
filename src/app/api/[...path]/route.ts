@@ -1,9 +1,10 @@
+import { env } from 'cloudflare:workers';
 import { NextRequest, NextResponse } from 'next/server';
 
 const API_BASE_URL = (
   process.env.NEXT_PUBLIC_YUNIKO_API_URL ??
   'https://yuniko-api.lafatriniainaallane.workers.dev'
-).replace(/\/+(?:api\/?)?$/, '');
+).replace(/\/+$/, '').replace(/\/api$/, '');
 
 function buildUpstreamHeaders(request: NextRequest) {
   const headers = new Headers();
@@ -32,7 +33,10 @@ async function proxy(request: NextRequest) {
   }
 
   try {
-    const upstream = await fetch(target, init);
+    const api = (env as { YUNIKO_API?: Fetcher }).YUNIKO_API;
+    const upstream = api
+      ? await api.fetch(new Request(target, init))
+      : await fetch(target, init);
     const responseHeaders = new Headers();
 
     upstream.headers.forEach((value, key) => {
