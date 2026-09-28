@@ -6,8 +6,27 @@ import app from "./app";
 
 app.listen(3000);
 
+const RUNTIME_ENV_KEYS = [
+  "SUPABASE_URL",
+  "SUPABASE_SERVICE_ROLE_KEY",
+  "SUPABASE_ANON_KEY",
+  "SUPABASE_KEY",
+  "SESSION_SECRET",
+  "YUNIKO_APP_URL",
+  "YUNIKO_API_URL",
+  "NODE_ENV",
+] as const;
+
 export default {
   async fetch(request: Request, env: unknown, ctx: any) {
+    const runtimeEnv = env as Record<string, unknown>;
+    for (const key of RUNTIME_ENV_KEYS) {
+      const value = runtimeEnv[key];
+      if (typeof value === "string" && value.length > 0) {
+        process.env[key] = value;
+      }
+    }
+
     const pathname = new URL(request.url).pathname;
     if (pathname === "/api" || pathname.startsWith("/api/")) {
       return handleAsNodeRequest(3000, request);
