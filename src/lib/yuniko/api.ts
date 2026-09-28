@@ -1,4 +1,4 @@
-const API_BASE_URL = (process.env.NEXT_PUBLIC_YUNIKO_API_URL ?? 'https://yuniko-api.lafatriniainaallane.workers.dev').replace(/\/+$/, '').replace(/\/api$/, '');
+const API_BASE_URL = (process.env.NEXT_PUBLIC_YUNIKO_API_URL ?? 'https://yunikov1-app.lafatriniainaallane.workers.dev').replace(/\/+$/, '').replace(/\/api$/, '');
 
 export interface YunikoAuthUser {
   id: string;

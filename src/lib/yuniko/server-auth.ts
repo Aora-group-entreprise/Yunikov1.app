@@ -6,7 +6,7 @@ import type { YunikoAuthUser } from './api';
 
 const API_BASE_URL = (
   process.env.NEXT_PUBLIC_YUNIKO_API_URL ??
-  'https://yuniko-api.lafatriniainaallane.workers.dev'
+  'https://yunikov1-app.lafatriniainaallane.workers.dev'
 ).replace(/\/+(?:api\/?)?$/, '');
 
 export const getYunikoServerUser = cache(async (): Promise<YunikoAuthUser | null> => {
