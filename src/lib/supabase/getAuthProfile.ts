@@ -1,26 +1,15 @@
 import 'server-only';
 
 import { cache } from 'react';
-import { PROFILE_BASE_SELECT } from '@/src/lib/profileSelect';
-import { getRequestClient } from './getCachedUser';
 import { getYunikoServerUser } from '../yuniko/server-auth';
 
 export const getAuthProfile = cache(async () => {
    const user = await getYunikoServerUser();
    if (!user) return null;
 
-   const supabase = await getRequestClient();
-   const { data: profile } = await supabase
-      .from('profiles')
-      .select(PROFILE_BASE_SELECT)
-      .eq('username', user.username)
-      .maybeSingle();
-
-   if (profile) return profile;
-
-   // Custom Yuniko auth stores identity in public.users rather than
-   // Supabase Auth/profiles. Keep the existing profile consumers working
-   // when a legacy profiles row does not exist yet.
+   // Yuniko custom auth is the source of truth for the signed-in identity.
+   // Do not query public.profiles here: the legacy table does not guarantee
+   // the full_name column and is not required to render the home page.
    return {
       id: String(user.id),
       username: user.username,
