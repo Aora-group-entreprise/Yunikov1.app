@@ -1,11 +1,9 @@
 import express, { type Express } from "express";
 import cors from "cors";
-import { env as cloudflareEnv } from "cloudflare:workers";
 import router from "./routes";
 
 const app: Express = express();
-const runtimeEnv = cloudflareEnv as unknown as Record<string, string | undefined>;
-const configuredOrigin = String(runtimeEnv["YUNIKO_APP_URL"] ?? process.env["YUNIKO_APP_URL"] ?? "").trim().replace(/\/+$/, "");
+const configuredOrigin = String(process.env["YUNIKO_APP_URL"] ?? "").trim().replace(/\/+$/, "");
 
 app.use(
   cors({
