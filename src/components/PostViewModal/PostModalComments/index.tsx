@@ -81,7 +81,7 @@ export default function PostModalComments({ initialPost }: PostModalCommentsProp
    const { mutate: togglePostRepost } = useTogglePostRepost(post);
    const { mutate: togglePostSave } = useTogglePostSave(post);
 
-   const { mutate: submitComment } = useSubmitComment(post.id, commentsKey);
+   const { mutate: submitComment } = useSubmitComment(postId, commentsKey);
 
    const ACTION_BUTTONS: readonly ActionButton[] = [
       {
