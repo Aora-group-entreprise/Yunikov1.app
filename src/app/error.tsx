@@ -52,6 +52,11 @@ export default function Error({
                <div style={styles.info}><span>Route</span><code>{details.path}</code></div>
                <div style={styles.info}><span>Heure</span><code>{details.time}</code></div>
             </div>
+            <div style={styles.diagnostic}>
+               <strong>Diagnostic serveur</strong>
+               <p>Next.js masque les détails des erreurs Server Components en production. Le digest ci-dessus permet de retrouver l’erreur dans les logs Cloudflare.</p>
+               <a href="/api/health" target="_blank" rel="noreferrer" style={styles.link}>Tester directement le proxy API</a>
+            </div>
             <div style={styles.actions}>
                <button type="button" onClick={() => reset()} style={styles.primary}>Réessayer</button>
                <button type="button" onClick={() => window.location.reload()} style={styles.secondary}>Recharger</button>
@@ -73,6 +78,8 @@ const styles = {
    message: { margin: 0, whiteSpace: 'pre-wrap' as const, overflowWrap: 'anywhere' as const, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: '13px', lineHeight: 1.6 },
    grid: { display: 'grid', gap: '10px', marginTop: '14px' },
    info: { display: 'grid', gap: '4px', padding: '11px 13px', borderRadius: '12px', background: '#f5f8fc' },
+   diagnostic: { marginTop: '16px', padding: '14px', borderRadius: '12px', background: '#fff8e8', border: '1px solid #f0d58a', color: '#5f4b16', lineHeight: 1.5, fontSize: '13px' },
+   link: { color: '#0759c7', fontWeight: 750, textDecoration: 'underline' },
    actions: { display: 'flex', flexWrap: 'wrap' as const, gap: '10px', marginTop: '20px' },
    primary: { border: 0, borderRadius: '12px', padding: '11px 16px', background: '#1677ff', color: '#fff', fontWeight: 700, cursor: 'pointer' },
    secondary: { border: '1px solid #d5dfeb', borderRadius: '12px', padding: '11px 16px', background: '#fff', color: '#24364b', fontWeight: 650, cursor: 'pointer' },
