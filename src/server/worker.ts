@@ -7,7 +7,7 @@ import app from "./app";
 app.listen(3000);
 
 export default {
-  async fetch(request: Request, env: unknown, ctx: ExecutionContext) {
+  async fetch(request: Request, env: unknown, ctx: any) {
     const pathname = new URL(request.url).pathname;
     if (pathname === "/api" || pathname.startsWith("/api/")) {
       return handleAsNodeRequest(3000, request);
