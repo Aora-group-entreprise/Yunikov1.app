@@ -1,6 +1,6 @@
 'use server';
 import 'server-only';
-import { getHideAiContent } from '@/src/lib/getHideAiContent';
+
 import { getSupabaseAdmin } from '@/src/lib/yuniko/server-api';
 import { throwIfError } from '@/src/lib/unwrap';
 import { SearchProfilesSchema, validate } from '@/src/lib/validation';
@@ -13,39 +13,36 @@ export async function searchProfiles(options: {
 }) {
    const validated = validate(SearchProfilesSchema, options);
    const { user } = await getOptionalUser();
-   const supabase = getSupabaseAdmin();
 
-   // The authenticated session belongs to the Yuniko API host. The Next.js
-   // server cannot see that HttpOnly cookie, so an anonymous server request
-   // must not query the RLS-protected profiles table.
    if (!user) return [];
 
-   const hideAi = await getHideAiContent();
-
+   const supabase = getSupabaseAdmin();
    let q = supabase
-      .from('profiles')
-      .select('id, username, full_name, avatar_url, is_private')
+      .from('users')
+      .select('id, username, display_name, avatar_url')
       .order('created_at', { ascending: false })
       .limit(validated.limit ?? 10);
-
-   if (hideAi) {
-      q = q.eq('is_ai', false);
-   }
 
    if (validated.search) {
       const trimmed = validated.search.trim();
       if (trimmed) {
-         q = q.or(`username.ilike.%${trimmed}%,full_name.ilike.%${trimmed}%`);
+         q = q.or(
+            'username.ilike.%' + trimmed + '%,display_name.ilike.%' + trimmed + '%',
+         );
       }
    }
 
-   if (validated.excludeId) {
-      q = q.neq('id', validated.excludeId);
-   } else if (user) {
-      q = q.neq('id', user.id);
-   }
+   const excludeId = validated.excludeId ?? user.id;
+   q = q.neq('id', Number(excludeId));
 
    const { data, error } = await q;
-   throwIfError({ error }, 'Failed to search profiles');
-   return data ?? [];
+   throwIfError({ error }, 'Failed to search users');
+
+   return (data ?? []).map(row => ({
+      id: String(row.id),
+      username: row.username,
+      full_name: row.display_name,
+      avatar_url: row.avatar_url,
+      is_private: false,
+   }));
 }
