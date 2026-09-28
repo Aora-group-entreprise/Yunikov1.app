@@ -54,7 +54,8 @@ export default function PostModalComments({ initialPost }: PostModalCommentsProp
    const { close: closePostViewModalStore, returnPath } = usePostViewModal();
    const router = useRouter();
    const { data: authUser } = useAuthUser();
-   const postKey = queryKeys.post(initialPost.id);
+   const initialPostId = String(initialPost.id);
+   const postKey = queryKeys.post(initialPostId);
 
    const scrollAreaRef = useRef<HTMLDivElement>(null);
    const commentInputRef = useRef<EmojiInputRef>(null);
@@ -64,10 +65,11 @@ export default function PostModalComments({ initialPost }: PostModalCommentsProp
    const { data: post } = useQuery({
       initialData: initialPost,
       queryKey: postKey,
-      queryFn: () => getPost({ postId: initialPost.id }),
+      queryFn: () => getPost({ postId: initialPostId }),
    });
 
-   const { comments, commentsKey, isLoading: commentsLoading } = usePostComments(post.id);
+   const postId = String(post.id);
+   const { comments, commentsKey, isLoading: commentsLoading } = usePostComments(postId);
 
    useEffect(() => {
       if (scrollAreaRef.current && comments.length > 0) {
@@ -111,7 +113,7 @@ export default function PostModalComments({ initialPost }: PostModalCommentsProp
       {
          label: 'Share',
          icon: <LuSend size={22} />,
-         onClick: () => openShareModal(post.id),
+         onClick: () => openShareModal(postId),
       },
    ] as const;
 
@@ -198,7 +200,7 @@ export default function PostModalComments({ initialPost }: PostModalCommentsProp
                      <button
                         type="button"
                         aria-label="Post owner actions"
-                        onClick={() => openOwnerActions(post.id)}
+                        onClick={() => openOwnerActions(postId)}
                         {...stylex.props(styles.moreButton)}
                      >
                         <TbDots size={20} />

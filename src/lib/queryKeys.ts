@@ -6,7 +6,7 @@ export const staleTime = {
 
 export const queryKeys = {
    authUser: () => ['authUser'] as const,
-   post: (id: string) => ['post', id] as const,
+   post: (id: string | number) => ['post', String(id)] as const,
    postForEdit: (id: string) => ['post-for-edit', id] as const,
    comments: (postId: string, hideAi?: boolean) => ['comments', postId, hideAi ?? false] as const,
    replies: (parentId: string, hideAi?: boolean) => ['replies', parentId, hideAi ?? false] as const,

@@ -12,7 +12,7 @@ export function useTogglePostRepost(post: RepostablePost) {
 
    return useOptimisticToggle<PostWithMedia>({
       queryKey: queryKeys.post(post.id),
-      mutationFn: () => togglePostRepost({ postId: post.id, isReposted }),
+      mutationFn: () => togglePostRepost({ postId: String(post.id), isReposted }),
       updater: old => {
          if (!authUser) return old;
          return {

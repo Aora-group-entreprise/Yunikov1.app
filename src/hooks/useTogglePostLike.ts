@@ -10,7 +10,7 @@ export function useTogglePostLike(post: PostWithMedia) {
 
    return useOptimisticToggle<PostWithMedia>({
       queryKey: queryKeys.post(post.id),
-      mutationFn: () => togglePostLike({ postId: post.id, isLiked }),
+      mutationFn: () => togglePostLike({ postId: String(post.id), isLiked }),
       updater: old => {
          if (!authUser) return old;
          return {

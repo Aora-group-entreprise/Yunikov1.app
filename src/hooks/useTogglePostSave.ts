@@ -12,7 +12,7 @@ export function useTogglePostSave(post: SaveablePost) {
 
    return useOptimisticToggle<PostWithMedia>({
       queryKey: queryKeys.post(post.id),
-      mutationFn: () => toggleSavePost({ postId: post.id, isSaved }),
+      mutationFn: () => toggleSavePost({ postId: String(post.id), isSaved }),
       updater: old => {
          if (!authUser) return old;
          return {
