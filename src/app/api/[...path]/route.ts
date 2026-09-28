@@ -1,11 +1,6 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_YUNIKO_API_URL ??
-  'https://yuniko-api.lafatriniainaallane.workers.dev'
-).replace(/\/+$/, '').replace(/\/api$/, '');
-
 function buildUpstreamHeaders(request: NextRequest) {
   const headers = new Headers();
   request.headers.forEach((value, key) => {
@@ -19,8 +14,6 @@ async function proxy(request: NextRequest) {
   const incomingUrl = new URL(request.url);
   const path = incomingUrl.pathname.replace(/^\/api(?=\/|$)/, '') || '/';
   const upstreamPath = path === '/health' ? '/healthz' : path;
-  const target = new URL(API_BASE_URL + '/api' + upstreamPath);
-  target.search = incomingUrl.search;
 
   const init: RequestInit = {
     method: request.method,
@@ -35,6 +28,14 @@ async function proxy(request: NextRequest) {
 
   try {
     const { env } = await getCloudflareContext({ async: true });
+    const apiBaseUrl = String(
+      (env as { YUNIKO_API_URL?: string }).YUNIKO_API_URL ??
+        'https://yunikov1-app-api.lafatriniainaallane.workers.dev',
+    )
+      .replace(/\/+$/, '')
+      .replace(/\/api$/, '');
+    const target = new URL(apiBaseUrl + '/api' + upstreamPath);
+    target.search = incomingUrl.search;
     const api = (env as {
       YUNIKO_API?: {
         fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
