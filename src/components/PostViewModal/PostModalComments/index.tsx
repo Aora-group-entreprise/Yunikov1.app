@@ -141,7 +141,10 @@ export default function PostModalComments({ initialPost }: PostModalCommentsProp
                if (currentReturnPath) {
                   history.replaceState(null, '', currentReturnPath);
                } else {
-                  router.replace(`/profile/${initialPost.user.username}`);
+                  const ownerUsername = initialPost.user?.username;
+                  if (ownerUsername) {
+                     router.replace(`/profile/${ownerUsername}`);
+                  }
                }
             }}
          />
