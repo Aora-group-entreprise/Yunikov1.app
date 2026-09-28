@@ -60,25 +60,34 @@ function toProfile(
    };
 }
 
-function toPost(post: Record<string, any>) {
+function toPost(
+   post: Record<string, any>,
+   author: ApiProfileResponse['user'],
+): ProfileWithPosts['posts'][number] {
    return {
       id: String(post.id),
-      user_id: String(post.userId ?? post.user_id ?? ''),
+      user_id: String(post.userId ?? post.user_id ?? author.id),
       type: post.type ?? 'image',
       caption: post.caption ?? null,
       created_at: post.createdAt instanceof Date ? post.createdAt.toISOString() : String(post.createdAt ?? new Date().toISOString()),
-      aspect_ratio: post.aspectRatio ?? null,
+      aspect_ratio: post.aspectRatio ?? '1/1',
       hide_likes: Boolean(post.hideLikes),
       comments_off: Boolean(post.commentsOff),
       location_name: post.locationName ?? post.location ?? null,
       like_count: Number(post.likeCount ?? post.likes ?? 0),
       comment_count: Number(post.commentCount ?? post.comments ?? 0),
       repost_count: Number(post.repostCount ?? post.shares ?? 0),
-      visible_comment_count: [{ count: Number(post.commentCount ?? 0) }],
+      visible_comment_count: [{ count: Number(post.commentCount ?? post.comments ?? 0) }],
       likes: [],
       saves: [],
       reposts: [],
-      user: null,
+      user: {
+         id: String(author.id),
+         username: author.username,
+         full_name: author.displayName ?? null,
+         avatar_url: author.avatarUrl ?? null,
+         is_verified: author.verificationStatus === 'verified',
+      },
       collaborators: [],
       images: (post.images ?? []).map((image: any) => ({
          id: String(image.id),
@@ -110,7 +119,7 @@ export async function loadProfilePage(username: string, options?: { includeSaved
 
    if (!authUser) throw new Error('Unauthorized');
 
-   const posts = profileData.posts.map(toPost) as ProfileWithPosts['posts'];
+   const posts = profileData.posts.map((post) => toPost(post, profileData.user));
    const userProfile = toProfile(profileData.user, profileData.stats, posts);
    const isOwnProfile = authUser.username === username;
 
