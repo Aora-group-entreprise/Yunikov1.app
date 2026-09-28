@@ -45,7 +45,7 @@ export type PostsWithMedia = Array<{
       full_name?: string | null;
       avatar_url?: string | null;
    } | null;
-   images?: Array<{
+   images: Array<{
       id: string | number;
       url: string | null;
       position: number;
@@ -56,7 +56,7 @@ export type PostsWithMedia = Array<{
       unsplash_attribution?: unknown;
       tags?: unknown[];
    }>;
-   videos?: Array<{
+   videos: Array<{
       id: string | number;
       mux_playback_id: string | null;
       duration?: number | null;

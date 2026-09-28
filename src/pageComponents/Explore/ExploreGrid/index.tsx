@@ -19,8 +19,8 @@ interface ExploreGridProps {
 
 function isPortraitPost(post: PostsWithMedia[number]) {
    const primaryMedia = [
-      ...post.images.map(img => ({ position: img.position, width: img.width, height: img.height })),
-      ...post.videos.map(v => ({ position: v.position, width: v.width, height: v.height })),
+      ...(post.images ?? []).map(img => ({ position: img.position, width: img.width, height: img.height })),
+      ...(post.videos ?? []).map(v => ({ position: v.position, width: v.width, height: v.height })),
    ].sort((a, b) => a.position - b.position)[0];
    if (!primaryMedia?.width || !primaryMedia?.height) return false;
    return primaryMedia.height > primaryMedia.width;
