@@ -2,31 +2,38 @@ import 'server-only';
 
 import { cookies } from 'next/headers';
 import { cache } from 'react';
-import { getAuthenticatedUser } from './server-api';
 import type { YunikoAuthUser } from './api';
+
+const API_BASE_URL = (
+  process.env.NEXT_PUBLIC_YUNIKO_API_URL ??
+  'https://yuniko-api.lafatriniainaallane.workers.dev'
+).replace(/\/+(?:api\/?)?$/, '');
 
 export const getYunikoServerUser = cache(async (): Promise<YunikoAuthUser | null> => {
   const cookieHeader = (await cookies()).toString();
   if (!cookieHeader) return null;
 
-  const request = new Request('https://yunikov1.app/api/auth/me', {
-    headers: { cookie: cookieHeader },
-  });
+  try {
+    const response = await fetch(API_BASE_URL + '/api/auth/me', {
+      method: 'GET',
+      headers: {
+        cookie: cookieHeader,
+        accept: 'application/json',
+      },
+      cache: 'no-store',
+    });
 
-  const user = await getAuthenticatedUser(request);
-  if (!user) return null;
+    if (!response.ok) return null;
 
-  return {
-    id: String(user.id),
-    username: user.username,
-    displayName: user.displayName,
-    avatarUrl: user.avatarUrl,
-    country: user.country,
-    countryFlag: user.countryFlag,
-    age: user.age,
-    bio: user.bio,
-    website: user.website,
-    verificationStatus: user.verificationStatus,
-    createdAt: user.createdAt,
-  };
+    const data = await response.json();
+    const user = data as YunikoAuthUser & { id: string | number };
+
+    return {
+      ...user,
+      id: String(user.id),
+    };
+  } catch (error) {
+    console.error('Yuniko API auth lookup failed', error);
+    return null;
+  }
 });
