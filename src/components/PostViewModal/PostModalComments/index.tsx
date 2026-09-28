@@ -78,6 +78,14 @@ export default function PostModalComments({ initialPost }: PostModalCommentsProp
    const ownerUsername = owner.username ?? 'user';
    const ownerAvatarUrl = owner.avatar_url ?? null;
    const ownerProfile = { id: owner.id, username: ownerUsername };
+   const collaborators = Array.isArray(post.collaborators)
+      ? (post.collaborators as Array<{
+           user: {
+              id: string;
+              username: string | null | undefined;
+           };
+        }>)
+      : [];
    const { comments, commentsKey, isLoading: commentsLoading } = usePostComments(postId);
 
    useEffect(() => {
@@ -174,22 +182,22 @@ export default function PostModalComments({ initialPost }: PostModalCommentsProp
                            style={styles.postHeaderUsername}
                            userProfile={ownerProfile}
                         />
-                        {post.collaborators && post.collaborators.length > 0 && (
+                        {collaborators.length > 0 && (
                            <span {...stylex.props(styles.collaboratorsText)}>
                               {' and '}
-                              {post.collaborators.map((c, i) => (
-                                 <span key={c.user.id}>
+                              {collaborators.map((collaborator, i) => (
+                                 <span key={collaborator.user.id}>
                                     <OtherUserUsername
                                        style={styles.captionUsername}
-                                       userProfile={c.user}
+                                       userProfile={collaborator.user}
                                     />
-                                    {i < post.collaborators.length - 1 && ', '}
+                                    {i < collaborators.length - 1 && ', '}
                                  </span>
                               ))}
                            </span>
                         )}
                         {authUser?.id !== owner.id &&
-                           (!post.collaborators || post.collaborators.length === 0) && (
+                           collaborators.length === 0 && (
                               <>
                                  <span>•</span>
                                  <FollowButton
