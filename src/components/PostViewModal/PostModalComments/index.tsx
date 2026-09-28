@@ -69,14 +69,22 @@ export default function PostModalComments({ initialPost }: PostModalCommentsProp
    });
 
    const postId = String(post.id);
-   const owner = post.user ?? {
-      id: String(post.user_id),
-      username: 'user',
-      avatar_url: null,
-      is_private: false,
+   const owner: {
+      id: string;
+      username: string;
+      full_name: string | null;
+      avatar_url: string | null;
+      is_private: boolean;
+   } = {
+      id: String(post.user?.id ?? post.user_id),
+      username: post.user?.username ?? 'user',
+      full_name: post.user?.full_name ?? null,
+      avatar_url: post.user?.avatar_url ?? null,
+      is_private:
+         (post.user as { is_private?: boolean } | null | undefined)?.is_private ?? false,
    };
-   const ownerUsername = owner.username ?? 'user';
-   const ownerAvatarUrl = owner.avatar_url ?? null;
+   const ownerUsername = owner.username;
+   const ownerAvatarUrl = owner.avatar_url;
    const ownerProfile = { id: owner.id, username: ownerUsername };
    const collaborators = Array.isArray(post.collaborators)
       ? (post.collaborators as Array<{
