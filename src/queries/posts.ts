@@ -4,7 +4,7 @@ import type { Database } from '@/src/types/database';
 import { scopePostEngagementToUser } from '@/src/utils/posts';
 
 export const POST_WITH_MEDIA_SELECT = `
-   id, user_id, caption, type, created_at, location_name,
+   id, user_id, caption, type, aspect_ratio, created_at, location_name,
    like_count, comment_count, repost_count, hide_likes,
    likes(user_id),
    saves(user_id),
@@ -30,6 +30,7 @@ export type PostsWithMedia = Array<{
    created_at: string | null;
    caption?: string | null;
    type?: string;
+   aspect_ratio: string;
    location_name?: string | null;
    like_count?: number;
    comment_count?: number;
