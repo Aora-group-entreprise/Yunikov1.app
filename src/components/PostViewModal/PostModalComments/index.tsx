@@ -69,8 +69,14 @@ export default function PostModalComments({ initialPost }: PostModalCommentsProp
    });
 
    const postId = String(post.id);
-   const ownerUsername = post.user.username ?? 'user';
-   const ownerAvatarUrl = post.user.avatar_url ?? null;
+   const owner = post.user ?? {
+      id: String(post.user_id),
+      username: 'user',
+      avatar_url: null,
+      is_private: false,
+   };
+   const ownerUsername = owner.username ?? 'user';
+   const ownerAvatarUrl = owner.avatar_url ?? null;
    const { comments, commentsKey, isLoading: commentsLoading } = usePostComments(postId);
 
    useEffect(() => {
@@ -159,13 +165,13 @@ export default function PostModalComments({ initialPost }: PostModalCommentsProp
                      alt={ownerUsername}
                      size={32}
                      username={ownerUsername}
-                     userId={post.user.id}
+                     userId={owner.id}
                   />
                   <div {...stylex.props(styles.headerMeta)}>
                      <div {...stylex.props(styles.headerTopRow)}>
                         <OtherUserUsername
                            style={styles.postHeaderUsername}
-                           userProfile={post.user}
+                           userProfile={owner}
                         />
                         {post.collaborators && post.collaborators.length > 0 && (
                            <span {...stylex.props(styles.collaboratorsText)}>
@@ -181,13 +187,13 @@ export default function PostModalComments({ initialPost }: PostModalCommentsProp
                               ))}
                            </span>
                         )}
-                        {authUser?.id !== post.user.id &&
+                        {authUser?.id !== owner.id &&
                            (!post.collaborators || post.collaborators.length === 0) && (
                               <>
                                  <span>•</span>
                                  <FollowButton
-                                    targetUserId={post.user.id}
-                                    targetIsPrivate={post.user.is_private ?? false}
+                                    targetUserId={owner.id}
+                                    targetIsPrivate={owner.is_private ?? false}
                                     variant="sidebar"
                                     rootStyle={styles.inlineFollowButton}
                                  />
@@ -201,7 +207,7 @@ export default function PostModalComments({ initialPost }: PostModalCommentsProp
                         </span>
                      )}
                   </div>
-                  {authUser?.id === post.user.id && (
+                  {authUser?.id === owner.id && (
                      <button
                         type="button"
                         aria-label="Post owner actions"
@@ -215,17 +221,17 @@ export default function PostModalComments({ initialPost }: PostModalCommentsProp
                {post.caption && (
                   <div {...stylex.props(styles.captionRow)}>
                      <UserAvatar
-                        src={post.user.avatar_url}
-                        alt={post.user.username}
+                        src={owner.avatar_url}
+                        alt={owner.username}
                         size={32}
                         username={ownerUsername}
-                        userId={post.user.id}
+                        userId={owner.id}
                      />
                      <div {...stylex.props(styles.captionContent)}>
                         <div {...stylex.props(styles.captionTextRow)}>
                            <OtherUserUsername
                               style={styles.captionUsername}
-                              userProfile={post.user}
+                              userProfile={owner}
                            />{' '}
                            <span {...stylex.props(styles.captionText, sharedStyles.multilineText)}>
                               {post.caption}
@@ -246,7 +252,7 @@ export default function PostModalComments({ initialPost }: PostModalCommentsProp
                              comment={comment}
                              commentsKey={commentsKey}
                              onReply={handleReply}
-                             postOwnerId={post.user.id}
+                             postOwnerId={owner.id}
                           />
                        ))}
                </div>
