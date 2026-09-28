@@ -1,119 +1,133 @@
 'use server';
 import 'server-only';
-import { DB_NOW } from '@/src/lib/dbTime';
-import { getHideAiContent } from '@/src/lib/getHideAiContent';
-import { getSupabaseAdmin } from '@/src/lib/yuniko/server-api';
-import { CursorSchema, validate } from '@/src/lib/validation';
-import { throwIfError } from '../../lib/unwrap';
-import type { PostsWithMedia } from '../../queries/posts';
-import { POST_WITH_MEDIA_SELECT } from '../../queries/posts';
-import { applyVisibleCommentCount, hideLikesForNonOwners, nextCursorFrom } from '../../utils/posts';
-import { getOptionalUser } from '../getAuthUser';
 
-const PAGE_SIZE = 10;
+import { cookies, headers } from 'next/headers';
+import { CursorSchema, validate } from '@/src/lib/validation';
+import type { PostsWithMedia } from '../../queries/posts';
+
+const PAGE_SIZE = 50;
+
+type ApiFeedPost = {
+   id: number | string;
+   userId: number | string;
+   caption?: string | null;
+   mediaUrl?: string | null;
+   location?: string | null;
+   likes?: number | null;
+   comments?: number | null;
+   shares?: number | null;
+   saves?: number | null;
+   createdAt?: string | null;
+   authorDisplayName?: string | null;
+   authorUsername?: string | null;
+   authorAvatarUrl?: string | null;
+   liked?: boolean;
+   saved?: boolean;
+};
+
+type ApiFeedResponse = {
+   posts?: ApiFeedPost[];
+};
+
+function getApiBaseUrl(requestHeaders: Headers): string {
+   const host = requestHeaders.get('host');
+   if (host) {
+      const protocol = requestHeaders.get('x-forwarded-proto') ?? 'https';
+      return `${protocol}://${host}`;
+   }
+
+   const configured = (
+      process.env.YUNIKO_API_URL ??
+      process.env.NEXT_PUBLIC_YUNIKO_API_URL ??
+      'https://yunikov1-app-api.lafatriniainaallane.workers.dev'
+   ).trim();
+
+   return configured.replace(/\/+$/, '').replace(/\/api$/, '');
+}
+
+function mapApiPost(post: ApiFeedPost): PostsWithMedia[number] {
+   const id = String(post.id);
+   const userId = String(post.userId);
+   const mediaUrl = post.mediaUrl ?? null;
+
+   return {
+      id,
+      user_id: userId,
+      caption: post.caption ?? null,
+      created_at: post.createdAt ?? new Date().toISOString(),
+      aspect_ratio: 'original',
+      location_name: post.location ?? null,
+      like_count: Number(post.likes ?? 0),
+      comment_count: Number(post.comments ?? 0),
+      repost_count: Number(post.shares ?? 0),
+      hide_likes: false,
+      comments_off: false,
+      likes: post.liked ? [{ user_id: userId }] : [],
+      saves: post.saved ? [{ user_id: userId }] : [],
+      reposts: [],
+      user: {
+         id: userId,
+         username: post.authorUsername ?? 'unknown',
+         full_name: post.authorDisplayName ?? null,
+         avatar_url: post.authorAvatarUrl ?? null,
+      },
+      images: mediaUrl
+         ? [{
+              id: `${id}-media`,
+              url: mediaUrl,
+              position: 0,
+              width: null,
+              height: null,
+              blur_data_url: null,
+              alt_text: null,
+           }]
+         : [],
+      videos: [],
+      type: mediaUrl ? 'post' : 'text',
+   };
+}
 
 export interface HomeFeedPage {
    posts: PostsWithMedia;
    nextCursor: string | null;
 }
 
-function normalizePosts(posts: PostsWithMedia): PostsWithMedia {
-   return posts.map(post => {
-      const userProfile = Array.isArray(post.user) ? post.user[0] : post.user;
-      const images = post.images ?? [];
-      const videos = post.videos ?? [];
-      const isVideo = post.type === 'video' || post.type === 'reel';
-
-      return {
-         ...post,
-         type: isVideo ? 'reel' : 'post',
-         aspect_ratio: 'original',
-         hide_likes: post.hide_likes ?? false,
-         comments_off: false,
-         user: userProfile
-            ? {
-                 ...userProfile,
-                 id: String(userProfile.id),
-                 full_name: userProfile.full_name ?? null,
-                 is_private: false,
-                 is_verified: false,
-              }
-            : {
-                 id: String(post.user_id),
-                 username: 'unknown',
-                 full_name: null,
-                 avatar_url: null,
-                 is_private: false,
-                 is_verified: false,
-              },
-         collaborators: [],
-         reposts: [],
-         images,
-         videos,
-      };
-   });
-}
-
 export async function getHomeFeedPosts(params: {
    variant: 'home' | 'following';
    cursor?: string | null;
-}) {
-   const { variant, cursor } = validate(CursorSchema, params);
-   const { user } = await getOptionalUser();
-   const supabase = getSupabaseAdmin();
+}): Promise<HomeFeedPage> {
+   const { cursor } = validate(CursorSchema, params);
+   const cookieHeader = (await cookies()).toString();
+   if (!cookieHeader) return { posts: [], nextCursor: null };
 
-   if (!user) {
-      return { posts: [], nextCursor: null };
+   const baseUrl = getApiBaseUrl(await headers());
+   const query = new URLSearchParams();
+   if (cursor) query.set('since', cursor);
+
+   const response = await fetch(
+      `${baseUrl}/api/posts/feed${query.toString() ? `?${query.toString()}` : ''}`,
+      {
+         method: 'GET',
+         headers: {
+            cookie: cookieHeader,
+            accept: 'application/json',
+         },
+         cache: 'no-store',
+      },
+   );
+
+   const payload = await response.json().catch(() => ({} as ApiFeedResponse));
+   if (!response.ok) {
+      throw new Error(
+         typeof (payload as { error?: unknown })?.error === 'string'
+            ? String((payload as { error: string }).error)
+            : `Failed to fetch home feed (${response.status})`,
+      );
    }
 
-   await getHideAiContent();
-
-   if (variant === 'home') {
-      let query = supabase
-         .from('posts')
-         .select(POST_WITH_MEDIA_SELECT)
-         .lte('created_at', DB_NOW)
-         .order('created_at', { ascending: false })
-         .limit(PAGE_SIZE);
-
-      if (cursor) query = query.lt('created_at', cursor);
-
-      const { data, error } = await query;
-      throwIfError({ error }, 'Failed to fetch home feed');
-
-      const normalizedPosts = normalizePosts((data ?? []) as unknown as PostsWithMedia);
-      const posts = applyVisibleCommentCount(normalizedPosts) as PostsWithMedia;
-      return {
-         posts: hideLikesForNonOwners(posts, user.id),
-         nextCursor: nextCursorFrom(posts, PAGE_SIZE),
-      };
-   }
-
-   const { data: postIds, error: rpcError } = await supabase.rpc('get_following_posts', {
-      p_follower_id: user.id,
-      before_cursor: cursor ?? undefined,
-      page_size: PAGE_SIZE,
-   });
-
-   throwIfError({ error: rpcError }, 'Failed to fetch following feed');
-   if (!postIds || postIds.length === 0) {
-      return { posts: [], nextCursor: null };
-   }
-
-   const { data: posts, error: postsError } = await supabase
-      .from('posts')
-      .select(POST_WITH_MEDIA_SELECT)
-      .in(
-         'id',
-         postIds.map((p: { id: string | number }) => p.id),
-      )
-      .lte('created_at', DB_NOW)
-      .order('created_at', { ascending: false });
-
-   throwIfError({ error: postsError }, 'Failed to fetch following feed');
-
-   const normalizedPosts = normalizePosts((posts ?? []) as unknown as PostsWithMedia);
-   const safePosts = applyVisibleCommentCount(normalizedPosts) as PostsWithMedia;
-   const nextCursor = nextCursorFrom(postIds, PAGE_SIZE);
-   return { posts: hideLikesForNonOwners(safePosts, user.id), nextCursor };
+   const apiPosts = Array.isArray(payload?.posts) ? payload.posts : [];
+   return {
+      posts: apiPosts.slice(0, PAGE_SIZE).map(mapApiPost),
+      nextCursor: null,
+   };
 }
