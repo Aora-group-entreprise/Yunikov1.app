@@ -5,11 +5,11 @@ import { scopePostEngagementToUser } from '@/src/utils/posts';
 
 export const POST_WITH_MEDIA_SELECT = `
    id, user_id, caption, type, aspect_ratio, created_at, location_name,
-   like_count, comment_count, repost_count, hide_likes,
+   like_count, comment_count, repost_count, hide_likes, comments_off,
    likes(user_id),
    saves(user_id),
    reposts(user_id),
-   user:profiles!posts_user_id_fkey(id, username, full_name, avatar_url),
+   user:profiles!posts_user_id_fkey(id, username, full_name, avatar_url, is_verified),
    images:post_images(id, url, position, width, height, blur_data_url, alt_text, unsplash_attribution),
    videos:post_videos(id, mux_playback_id, duration, position, width, height)
 ` as const;
@@ -36,6 +36,7 @@ export type PostsWithMedia = Array<{
    comment_count: number;
    repost_count: number;
    hide_likes: boolean;
+   comments_off: boolean;
    likes: Array<{ user_id: string }>;
    saves: Array<{ user_id: string }>;
    reposts: Array<{ user_id: string }>;

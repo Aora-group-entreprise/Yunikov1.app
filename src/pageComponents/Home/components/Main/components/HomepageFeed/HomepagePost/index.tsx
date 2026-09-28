@@ -91,7 +91,7 @@ export default function HomepagePost({ post: initialPost, index }: HomepagePostP
       <div {...stylex.props(styles.root)}>
          <div {...stylex.props(styles.header)}>
             <UserAvatar
-               src={owner.avatar_url}
+               src={owner.avatar_url ?? null}
                alt={owner.username}
                size={32}
                username={owner.username}
