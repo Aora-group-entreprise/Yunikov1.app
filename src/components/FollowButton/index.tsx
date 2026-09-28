@@ -5,10 +5,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { cancelFollowRequest } from '@/src/actions/follow/cancelFollowRequest';
 import { followUser } from '@/src/actions/follow/followUser';
 import { unfollowUser } from '@/src/actions/follow/unfollowUser';
-import { useAuthUser } from '@/src/hooks/useAuthUser';
 import { queryKeys } from '@/src/lib/queryKeys';
-import { supabase } from '@/src/lib/supabase/client';
-import { type FollowState, getFollowStatus } from '@/src/queries/followStatus';
+import { type FollowState } from '@/src/queries/followStatus';
 import { styles } from './index.stylex';
 
 interface FollowButtonProps {
@@ -26,17 +24,19 @@ export default function FollowButton({
    variant,
    rootStyle,
 }: FollowButtonProps) {
-   const { data: authUser } = useAuthUser();
    const queryClient = useQueryClient();
    const queryKey = ['follow-status', targetUserId];
 
    const { data: state = 'none' } = useQuery({
       queryKey,
       queryFn: async () => {
-         return getFollowStatus(supabase, authUser ? String(authUser.id) : '', targetUserId);
+         const response = await fetch('/api/users/' + encodeURIComponent(targetUserId), { credentials: 'include', cache: 'no-store' });
+         if (!response.ok) return initialState ?? 'none';
+         const data = await response.json();
+         return data.following ? 'following' : 'none';
       },
       ...(initialState !== undefined && { initialData: initialState }),
-      staleTime: Infinity,
+      staleTime: 30_000,
    });
 
    const { mutate, isPending } = useMutation({

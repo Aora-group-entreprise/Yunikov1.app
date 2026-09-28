@@ -1,36 +1,10 @@
 import 'server-only';
-import { throwIfError } from '@/src/lib/unwrap';
-import { getAuthUser } from '../getAuthUser';
+import { yunikoApi } from '@/src/lib/yuniko/server-api';
 
 type PostRelationTable = 'likes' | 'reposts' | 'saves';
-
-interface TogglePostRelationParams {
-   table: PostRelationTable;
-   postId: string;
-   isActive: boolean;
-   removeErrorMessage: string;
-   addErrorMessage: string;
-}
-
-export async function togglePostRelation({
-   table,
-   postId,
-   isActive,
-   removeErrorMessage,
-   addErrorMessage,
-}: TogglePostRelationParams) {
-   const { supabase, user } = await getAuthUser();
-
-   if (isActive) {
-      const { error } = await supabase
-         .from(table)
-         .delete()
-         .eq('post_id', postId)
-         .eq('user_id', user.id);
-      throwIfError({ error }, removeErrorMessage);
-      return;
-   }
-
-   const { error } = await supabase.from(table).insert({ post_id: postId, user_id: user.id });
-   throwIfError({ error }, addErrorMessage);
+interface TogglePostRelationParams { table: PostRelationTable; postId: string; isActive: boolean; removeErrorMessage: string; addErrorMessage: string; }
+export async function togglePostRelation({ table, postId, isActive, removeErrorMessage, addErrorMessage }: TogglePostRelationParams) {
+  const route = table === 'likes' ? 'like' : table === 'saves' ? 'save' : 'repost';
+  try { return await yunikoApi('/api/posts/' + encodeURIComponent(postId) + '/' + route, { method: 'POST' }); }
+  catch (error) { throw new Error(isActive ? removeErrorMessage : addErrorMessage, { cause: error }); }
 }
