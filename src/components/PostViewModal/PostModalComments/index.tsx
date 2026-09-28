@@ -69,6 +69,8 @@ export default function PostModalComments({ initialPost }: PostModalCommentsProp
    });
 
    const postId = String(post.id);
+   const ownerUsername = post.user.username ?? 'user';
+   const ownerAvatarUrl = post.user.avatar_url ?? null;
    const { comments, commentsKey, isLoading: commentsLoading } = usePostComments(postId);
 
    useEffect(() => {
@@ -153,10 +155,10 @@ export default function PostModalComments({ initialPost }: PostModalCommentsProp
             <div {...stylex.props(styles.scrollArea)} ref={scrollAreaRef}>
                <div {...stylex.props(styles.postHeader)}>
                   <UserAvatar
-                     src={post.user.avatar_url}
-                     alt={post.user.username}
+                     src={ownerAvatarUrl}
+                     alt={ownerUsername}
                      size={32}
-                     username={post.user.username}
+                     username={ownerUsername}
                      userId={post.user.id}
                   />
                   <div {...stylex.props(styles.headerMeta)}>
@@ -216,7 +218,7 @@ export default function PostModalComments({ initialPost }: PostModalCommentsProp
                         src={post.user.avatar_url}
                         alt={post.user.username}
                         size={32}
-                        username={post.user.username}
+                        username={ownerUsername}
                         userId={post.user.id}
                      />
                      <div {...stylex.props(styles.captionContent)}>
