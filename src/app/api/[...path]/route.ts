@@ -1,4 +1,4 @@
-import { env } from 'cloudflare:workers';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { NextRequest, NextResponse } from 'next/server';
 
 const API_BASE_URL = (
@@ -33,7 +33,12 @@ async function proxy(request: NextRequest) {
   }
 
   try {
-    const api = (env as { YUNIKO_API?: { fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> } }).YUNIKO_API;
+    const { env } = await getCloudflareContext({ async: true });
+    const api = (env as {
+      YUNIKO_API?: {
+        fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
+      };
+    }).YUNIKO_API;
     const upstream = api
       ? await api.fetch(new Request(target, init))
       : await fetch(target, init);
