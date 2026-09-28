@@ -18,7 +18,8 @@ function buildUpstreamHeaders(request: NextRequest) {
 async function proxy(request: NextRequest) {
   const incomingUrl = new URL(request.url);
   const path = incomingUrl.pathname.replace(/^\/api(?=\/|$)/, '') || '/';
-  const target = new URL(API_BASE_URL + '/api' + path);
+  const upstreamPath = path === '/health' ? '/healthz' : path;
+  const target = new URL(API_BASE_URL + '/api' + upstreamPath);
   target.search = incomingUrl.search;
 
   const init: RequestInit = {
@@ -39,9 +40,18 @@ async function proxy(request: NextRequest) {
         fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
       };
     }).YUNIKO_API;
-    const upstream = api
-      ? await api.fetch(new Request(target, init))
-      : await fetch(target, init);
+
+    let upstream: Response;
+    if (api) {
+      try {
+        upstream = await api.fetch(new Request(target, init));
+      } catch (bindingError) {
+        console.error('Yuniko API service binding error, using public API fallback', bindingError);
+        upstream = await fetch(target, init);
+      }
+    } else {
+      upstream = await fetch(target, init);
+    }
     const responseHeaders = new Headers();
 
     upstream.headers.forEach((value, key) => {
