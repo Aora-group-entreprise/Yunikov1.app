@@ -23,7 +23,7 @@ export function getPostThumbnail(post: PostMediaSource) {
 type PostWithOwner = {
    hide_likes?: boolean;
    user_id?: string;
-   user?: { id: string };
+   user?: { id: string } | null;
    like_count?: number;
 };
 
