@@ -30,6 +30,18 @@ type ApiFeedResponse = {
 };
 
 function getApiBaseUrl(requestHeaders: Headers): string {
+   // The feed API lives in the same Cloudflare Worker as the app.
+   // Build the origin from the incoming request so stale Cloudflare vars
+   // cannot send server-side rendering to an older Worker URL.
+   const host =
+      requestHeaders.get('x-forwarded-host') ??
+      requestHeaders.get('host');
+
+   if (host) {
+      const protocol = requestHeaders.get('x-forwarded-proto') ?? 'https';
+      return `${protocol}://${host}`;
+   }
+
    const configured = (
       process.env.YUNIKO_API_URL ??
       process.env.NEXT_PUBLIC_YUNIKO_API_URL ??
@@ -41,12 +53,6 @@ function getApiBaseUrl(requestHeaders: Headers): string {
       while (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
       if (baseUrl.endsWith('/api')) baseUrl = baseUrl.slice(0, -4);
       return baseUrl;
-   }
-
-   const host = requestHeaders.get('host');
-   if (host) {
-      const protocol = requestHeaders.get('x-forwarded-proto') ?? 'https';
-      return `${protocol}://${host}`;
    }
 
    return 'https://yunikov1-app-api.lafatriniainaallane.workers.dev';
