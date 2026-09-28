@@ -8,7 +8,12 @@ export function formatAltText(
    const parts: string[] = [];
 
    const image = post.images?.[imageIndex];
-   const taggedUsernames = image?.tags?.map(t => t.user.username) ?? [];
+   const taggedUsernames =
+      image?.tags?.flatMap(tag => {
+         if (typeof tag !== 'object' || tag === null) return [];
+         const value = tag as { user?: { username?: string | null } };
+         return typeof value.user?.username === 'string' ? [value.user.username] : [];
+      }) ?? [];
 
    const dateStr = post.created_at
       ? new Date(post.created_at).toLocaleDateString('en-US', {
@@ -18,7 +23,7 @@ export function formatAltText(
         })
       : '';
 
-   parts.push(`Photo by ${post.user.username} on ${dateStr}`);
+   parts.push(`Photo by ${post.user?.username ?? 'user'} on ${dateStr}`);
 
    if (taggedUsernames.length > 0) {
       parts.push(`tagging @${taggedUsernames.join(', @')}`);

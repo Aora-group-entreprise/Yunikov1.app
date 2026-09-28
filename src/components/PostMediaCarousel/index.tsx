@@ -37,50 +37,64 @@ interface UnifiedMedia {
 
 function mergeMedia(post: PostWithMedia): UnifiedMedia[] {
    const images: UnifiedMedia[] =
-      post.images?.map((img, i) => ({
-         id: img.id,
-         type: 'image' as const,
-         url: img.url,
-         position: img.position,
-         blurDataURL: img.blur_data_url ?? undefined,
-         altText: formatAltText(img.alt_text, post, i),
-         unsplashAttribution: parseUnsplashAttribution(img.unsplash_attribution),
-         tags:
-            img.tags?.flatMap(tag => {
-               if (typeof tag !== 'object' || tag === null) return [];
-               const value = tag as {
-                  id?: string | number;
-                  x?: number;
-                  y?: number;
-                  user?: { username?: string | null };
-               };
-               if (
-                  value.id === undefined ||
-                  typeof value.x !== 'number' ||
-                  typeof value.y !== 'number' ||
-                  typeof value.user?.username !== 'string'
-               ) {
-                  return [];
-               }
-               return [
-                  {
-                     id: String(value.id),
-                     x: value.x,
-                     y: value.y,
-                     username: value.user.username,
-                  },
-               ];
-            }) ?? [],
-      })) ?? [];
+      post.images?.flatMap((img, i) => {
+         if (typeof img.url !== 'string' || img.url.length === 0) return [];
+
+         return [
+            {
+               id: String(img.id),
+               type: 'image' as const,
+               url: img.url,
+               position: img.position,
+               blurDataURL: img.blur_data_url ?? undefined,
+               altText: formatAltText(img.alt_text, post, i),
+               unsplashAttribution: parseUnsplashAttribution(img.unsplash_attribution),
+               tags:
+                  img.tags?.flatMap(tag => {
+                     if (typeof tag !== 'object' || tag === null) return [];
+                     const value = tag as {
+                        id?: string | number;
+                        x?: number;
+                        y?: number;
+                        user?: { username?: string | null };
+                     };
+                     if (
+                        value.id === undefined ||
+                        typeof value.x !== 'number' ||
+                        typeof value.y !== 'number' ||
+                        typeof value.user?.username !== 'string'
+                     ) {
+                        return [];
+                     }
+                     return [
+                        {
+                           id: String(value.id),
+                           x: value.x,
+                           y: value.y,
+                           username: value.user.username,
+                        },
+                     ];
+                  }) ?? [],
+            },
+         ];
+      }) ?? [];
 
    const videos: UnifiedMedia[] =
-      post.videos?.map(vid => ({
-         id: String(vid.mux_playback_id ?? vid.id),
-         type: 'video' as const,
-         url: vid.mux_playback_id ?? '',
-         position: vid.position,
-         tags: [],
-      })) ?? [];
+      post.videos?.flatMap(vid => {
+         if (typeof vid.mux_playback_id !== 'string' || vid.mux_playback_id.length === 0) {
+            return [];
+         }
+
+         return [
+            {
+               id: String(vid.mux_playback_id),
+               type: 'video' as const,
+               url: vid.mux_playback_id,
+               position: vid.position,
+               tags: [],
+            },
+         ];
+      }) ?? [];
 
    return [...images, ...videos].sort((a, b) => a.position - b.position);
 }
@@ -246,7 +260,6 @@ export default function PostMediaCarousel({
                   }
 
                   return (
-                     // biome-ignore lint/a11y/useSemanticElements: <Link> tags inside prevent using <button>
                      <div
                         key={item.id}
                         role="button"
