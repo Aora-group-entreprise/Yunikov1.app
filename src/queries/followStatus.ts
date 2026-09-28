@@ -8,24 +8,15 @@ export async function getFollowStatus(
    authUserId: string,
    targetUserId: string,
 ) {
-   const [{ data: followData }, { data: requestData }] = await Promise.all([
-      supabase
-         .from('follows')
-         .select('follower_id')
-         .eq('follower_id', authUserId)
-         .eq('following_id', targetUserId)
-         .maybeSingle(),
-      supabase
-         .from('follow_requests')
-         .select('requester_id')
-         .eq('requester_id', authUserId)
-         .eq('target_id', targetUserId)
-         .maybeSingle(),
-   ]);
+   const { data: followData } = await supabase
+      .from('follows')
+      .select('follower_id, status')
+      .eq('follower_id', Number(authUserId))
+      .eq('following_id', Number(targetUserId))
+      .maybeSingle();
 
-   if (followData) return 'following' as const;
-   if (requestData) return 'requested' as const;
-   return 'none' as const;
+   if (!followData) return 'none' as const;
+   return followData.status === 'accepted' ? 'following' as const : 'requested' as const;
 }
 
 export async function getBatchFollowStatuses(
@@ -35,22 +26,19 @@ export async function getBatchFollowStatuses(
 ) {
    if (targetIds.length === 0) return {};
 
-   const [{ data: followData }, { data: requestData }] = await Promise.all([
-      supabase
-         .from('follows')
-         .select('following_id')
-         .eq('follower_id', authUserId)
-         .in('following_id', targetIds),
-      supabase
-         .from('follow_requests')
-         .select('target_id')
-         .eq('requester_id', authUserId)
-         .in('target_id', targetIds),
-   ]);
+   const { data: followData } = await supabase
+      .from('follows')
+      .select('following_id, status')
+      .eq('follower_id', Number(authUserId))
+      .in('following_id', targetIds.map(Number));
 
    const result: Record<string, FollowState> = {};
    for (const id of targetIds) result[id] = 'none';
-   for (const row of followData ?? []) result[row.following_id] = 'following';
-   for (const row of requestData ?? []) result[row.target_id] = 'requested';
+
+   for (const row of followData ?? []) {
+      result[String(row.following_id)] =
+         row.status === 'accepted' ? 'following' : 'requested';
+   }
+
    return result;
 }
