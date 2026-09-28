@@ -3,7 +3,7 @@ import { DB_NOW } from '@/src/lib/dbTime';
 import type { Database } from '@/src/types/database';
 
 export const ACTIVE_STORIES_SELECT = `
-   id, created_at, user_id, media_url, media_type,
+   *,
    users!stories_user_id_fkey(username, avatar_url),
    story_views(viewer_id),
    story_reactions(user_id)
