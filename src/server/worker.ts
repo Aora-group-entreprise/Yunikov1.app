@@ -14,7 +14,6 @@ const RUNTIME_ENV_KEYS = [
   "SESSION_SECRET",
   "YUNIKO_APP_URL",
   "YUNIKO_API_URL",
-  "NODE_ENV",
 ] as const;
 
 export default {
