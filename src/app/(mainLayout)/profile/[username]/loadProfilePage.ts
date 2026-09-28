@@ -1,6 +1,5 @@
-import { cookies } from 'next/headers';
-import { getYunikoServerUser } from '@/src/lib/yuniko/server-auth';
-import { yunikoApiFetch } from '@/src/lib/yuniko/api';
+import { cookies, headers } from 'next/headers';
+import type { YunikoAuthUser } from '@/src/lib/yuniko/api';
 import type { ProfileWithPosts } from '@/src/actions/profile/getUserProfileWithPosts';
 
 type ApiProfileResponse = {
@@ -20,13 +19,21 @@ type ApiProfileResponse = {
    privateAccount: boolean;
 };
 
-async function fetchProfileFromYuniko(username: string): Promise<ApiProfileResponse> {
-   const user = await getYunikoServerUser();
-   if (!user) throw new Error('Unauthorized');
+function getCurrentApiBaseUrl(requestHeaders: Headers): string {
+   const configured = process.env.NEXT_PUBLIC_YUNIKO_API_URL?.trim();
+   if (configured) return configured.replace(/\\/+$/, '').replace(/\\/api$/, '');
+   const host = requestHeaders.get('host');
+   if (host) {
+      const protocol = requestHeaders.get('x-forwarded-proto') ?? 'https';
+      return \`${protocol}://${host}\`;
+   }
+   return 'https://yunikov1-app-api.lafatriniainaallane.workers.dev';
+}
 
-   const response = await yunikoApiFetch(
-      `/users/by-username/${encodeURIComponent(username)}`,
-      { headers: { cookie: (await cookies()).toString() } },
+async function fetchProfileFromYuniko(username: string, cookieHeader: string, baseUrl: string): Promise<ApiProfileResponse> {
+   const response = await fetch(
+      `${baseUrl}/api/users/by-username/${encodeURIComponent(username)}`,
+      { headers: { cookie: cookieHeader, accept: 'application/json' }, cache: 'no-store' },
    );
 
    if (!response.ok) {
@@ -108,12 +115,20 @@ function toPost(
 }
 
 export async function loadProfilePage(username: string, options?: { includeSaved?: boolean }) {
-   const [authUser, profileData] = await Promise.all([
-      getYunikoServerUser(),
-      fetchProfileFromYuniko(username),
-   ]);
+   const cookieHeader = (await cookies()).toString();
+   if (!cookieHeader) throw new Error('Unauthorized');
 
-   if (!authUser) throw new Error('Unauthorized');
+   const requestHeaders = await headers();
+   const baseUrl = getCurrentApiBaseUrl(requestHeaders);
+   const authResponse = await fetch(`${baseUrl}/api/auth/me`, {
+      method: 'GET',
+      headers: { cookie: cookieHeader, accept: 'application/json' },
+      cache: 'no-store',
+   });
+   if (!authResponse.ok) throw new Error('Unauthorized');
+   const authData = await authResponse.json();
+   const authUser = authData as YunikoAuthUser & { id: string | number };
+   const profileData = await fetchProfileFromYuniko(username, cookieHeader, baseUrl);
 
    const posts = profileData.posts.map((post) => toPost(post, profileData.user));
    const userProfile = toProfile(profileData.user, profileData.stats, posts);
