@@ -3,47 +3,49 @@ import 'server-only';
 
 import { getHideAiContent } from '@/src/lib/getHideAiContent';
 import { getSupabaseAdmin } from '@/src/lib/yuniko/server-api';
-import { throwIfError } from '@/src/lib/unwrap';
 import { activeStoriesQuery, extractStoryMedia } from '@/src/queries/stories';
 import type { UnsplashAttribution } from '../../types/unsplash';
 import { getOptionalUser } from '../getAuthUser';
 
 export async function getActiveStories() {
    const { user } = await getOptionalUser();
-   const supabase = getSupabaseAdmin();
 
-   // Yuniko API owns authentication. The API session is not a Supabase Auth
-   // session on the Next.js server, so do not issue an RLS-protected stories
-   // query without a verified server-side identity.
+   // Yuniko API owns authentication. Stories are optional content for the
+   // home page, so an unavailable stories query must not break the whole route.
    if (!user) {
       return { entries: [], viewedStoryIds: [], reactedStoryIds: [] };
    }
 
    const currentUserId = user.id;
-   const hideAi = await getHideAiContent();
 
-   const { data, error } = await activeStoriesQuery(supabase, hideAi);
+   try {
+      const supabase = getSupabaseAdmin();
+      const hideAi = await getHideAiContent();
+      const { data, error } = await activeStoriesQuery(supabase, hideAi);
 
-   throwIfError({ error }, 'Failed to fetch stories');
-
-   const grouped = new Map<
-      string,
-      {
-         userId: string;
-         slug: string;
-         username: string;
-         avatarUrl: string | null;
-         timestamp: string;
-         stories: Array<{
-            storyId: string;
-            type: 'image' | 'video';
-            url: string;
-            blurDataUrl: string | null;
-            unsplashAttribution: UnsplashAttribution | null;
-            timestamp: string;
-         }>;
+      if (error) {
+         console.error('[Yuniko] Failed to fetch active stories:', error);
+         return { entries: [], viewedStoryIds: [], reactedStoryIds: [] };
       }
-   >();
+
+      const grouped = new Map<
+         string,
+         {
+            userId: string;
+            slug: string;
+            username: string;
+            avatarUrl: string | null;
+            timestamp: string;
+            stories: Array<{
+               storyId: string;
+               type: 'image' | 'video';
+               url: string;
+               blurDataUrl: string | null;
+               unsplashAttribution: UnsplashAttribution | null;
+               timestamp: string;
+            }>;
+         }
+      >();
 
    const viewedStoryIds: string[] = [];
    const reactedStoryIds: string[] = [];
@@ -95,6 +97,10 @@ export async function getActiveStories() {
    );
 
    return { entries, viewedStoryIds, reactedStoryIds };
+   } catch (error) {
+      console.error('[Yuniko] Active stories unavailable:', error);
+      return { entries: [], viewedStoryIds: [], reactedStoryIds: [] };
+   }
 }
 
 export type StoryEntry = Awaited<ReturnType<typeof getActiveStories>>['entries'][number];

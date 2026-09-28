@@ -77,6 +77,7 @@ export default function PostModalComments({ initialPost }: PostModalCommentsProp
    };
    const ownerUsername = owner.username ?? 'user';
    const ownerAvatarUrl = owner.avatar_url ?? null;
+   const ownerProfile = { id: owner.id, username: ownerUsername };
    const { comments, commentsKey, isLoading: commentsLoading } = usePostComments(postId);
 
    useEffect(() => {
@@ -171,7 +172,7 @@ export default function PostModalComments({ initialPost }: PostModalCommentsProp
                      <div {...stylex.props(styles.headerTopRow)}>
                         <OtherUserUsername
                            style={styles.postHeaderUsername}
-                           userProfile={owner}
+                           userProfile={ownerProfile}
                         />
                         {post.collaborators && post.collaborators.length > 0 && (
                            <span {...stylex.props(styles.collaboratorsText)}>
@@ -231,7 +232,7 @@ export default function PostModalComments({ initialPost }: PostModalCommentsProp
                         <div {...stylex.props(styles.captionTextRow)}>
                            <OtherUserUsername
                               style={styles.captionUsername}
-                              userProfile={owner}
+                              userProfile={ownerProfile}
                            />{' '}
                            <span {...stylex.props(styles.captionText, sharedStyles.multilineText)}>
                               {post.caption}
