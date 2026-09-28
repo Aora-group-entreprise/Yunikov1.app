@@ -36,27 +36,56 @@ export type ActiveStories = QueryData<ReturnType<typeof activeStoriesQuery>>;
 export type ActiveStory = ActiveStories[number];
 
 interface StoryMediaRow {
-   media_url: string | null;
-   media_type: string | null;
+   media_url?: string | null;
+   media_type?: string | null;
+   story_images?: Array<{
+      url?: string | null;
+      blur_data_url?: string | null;
+      unsplash_attribution?: unknown;
+   }> | null;
+   story_videos?: Array<{
+      mux_playback_id?: string | null;
+   }> | null;
 }
 
 export function extractStoryMedia(row: StoryMediaRow) {
-   if (!row.media_url) return null;
+   if (row.media_url) {
+      if (row.media_type === 'video') {
+         return {
+            type: 'video' as const,
+            url: row.media_url,
+            blurDataUrl: null,
+         };
+      }
 
-   if (row.media_type === 'video') {
+      return {
+         type: 'image' as const,
+         url: row.media_url,
+         blurDataUrl: null,
+         unsplashAttribution: null,
+      };
+   }
+
+   const image = row.story_images?.find(item => item.url);
+   if (image?.url) {
+      return {
+         type: 'image' as const,
+         url: image.url,
+         blurDataUrl: image.blur_data_url ?? null,
+         unsplashAttribution: image.unsplash_attribution ?? null,
+      };
+   }
+
+   const video = row.story_videos?.find(item => item.mux_playback_id);
+   if (video?.mux_playback_id) {
       return {
          type: 'video' as const,
-         url: row.media_url,
+         url: `https://stream.mux.com/${video.mux_playback_id}.m3u8`,
          blurDataUrl: null,
       };
    }
 
-   return {
-      type: 'image' as const,
-      url: row.media_url,
-      blurDataUrl: null,
-      unsplashAttribution: null,
-   };
+   return null;
 }
 
 export async function getStoryRingState(
