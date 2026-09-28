@@ -5,6 +5,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { BiNotificationOff } from 'react-icons/bi';
 import { getHomeFeedPosts, type HomeFeedPage } from '@/src/actions/post/getHomeFeedPosts';
 import PostSkeleton from '@/src/components/PostSkeleton';
+import RuntimeErrorDetails from '@/src/components/RuntimeErrorDetails';
 import { useInfiniteScrollSentinel } from '@/src/hooks/useInfiniteScrollSentinel';
 import { queryKeys } from '@/src/lib/queryKeys';
 import HomepagePost from './HomepagePost';
@@ -30,7 +31,13 @@ export default function FeedList({ variant, initialPage }: FeedListProps) {
       fetchNextPage,
    });
 
-   const posts = data.pages.flatMap(page => page.posts);
+   const pages = data.pages;
+   const realError = pages.find(page => page.errorMessage);
+   const posts = pages.flatMap(page => page.posts);
+
+   if (realError?.errorMessage) {
+      return <RuntimeErrorDetails title="Erreur réelle du feed" message={realError.errorMessage} stack={realError.errorStack} />;
+   }
 
    if (posts.length === 0) {
       return (

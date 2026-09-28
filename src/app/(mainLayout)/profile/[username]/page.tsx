@@ -1,4 +1,5 @@
 import ProfilePage from '@/src/pageComponents/Profile';
+import RuntimeErrorDetails from '@/src/components/RuntimeErrorDetails';
 import { loadProfilePage } from './loadProfilePage';
 
 interface ProfilePageProps {
@@ -9,9 +10,10 @@ interface ProfilePageProps {
 
 export default async function Profile({ params }: ProfilePageProps) {
    const { username } = await params;
-   const profileData = await loadProfilePage(username);
+   try {
+      const profileData = await loadProfilePage(username);
 
-   return (
+      return (
       <ProfilePage
          userProfile={profileData.userProfile}
          posts={profileData.posts}
@@ -23,5 +25,10 @@ export default async function Profile({ params }: ProfilePageProps) {
          repostedPosts={profileData.repostedPosts}
          savedPosts={profileData.savedPosts}
       />
-   );
+      );
+   } catch (error) {
+      const normalized = error instanceof Error ? error : new Error(String(error));
+      console.error('[Yuniko] Profile real error:', normalized);
+      return <RuntimeErrorDetails title={`Erreur réelle du profil @${username}`} message={normalized.message} stack={normalized.stack} />;
+   }
 }

@@ -90,6 +90,8 @@ function mapApiPost(post: ApiFeedPost): PostsWithMedia[number] {
 export interface HomeFeedPage {
    posts: PostsWithMedia;
    nextCursor: string | null;
+   errorMessage?: string;
+   errorStack?: string;
 }
 
 export async function getHomeFeedPosts(params: {
@@ -100,34 +102,45 @@ export async function getHomeFeedPosts(params: {
    const cookieHeader = (await cookies()).toString();
    if (!cookieHeader) return { posts: [], nextCursor: null };
 
-   const baseUrl = getApiBaseUrl(await headers());
-   const query = new URLSearchParams();
-   if (cursor) query.set('since', cursor);
+   try {
+      const baseUrl = getApiBaseUrl(await headers());
+      const query = new URLSearchParams();
+      if (cursor) query.set('since', cursor);
 
-   const response = await fetch(
-      `${baseUrl}/api/posts/feed${query.toString() ? `?${query.toString()}` : ''}`,
-      {
-         method: 'GET',
-         headers: {
-            cookie: cookieHeader,
-            accept: 'application/json',
+      const response = await fetch(
+         `${baseUrl}/api/posts/feed${query.toString() ? `?${query.toString()}` : ''}`,
+         {
+            method: 'GET',
+            headers: {
+               cookie: cookieHeader,
+               accept: 'application/json',
+            },
+            cache: 'no-store',
          },
-         cache: 'no-store',
-      },
-   );
-
-   const payload = await response.json().catch(() => ({} as ApiFeedResponse));
-   if (!response.ok) {
-      throw new Error(
-         typeof (payload as { error?: unknown })?.error === 'string'
-            ? String((payload as { error: string }).error)
-            : `Failed to fetch home feed (${response.status})`,
       );
-   }
 
-   const apiPosts = Array.isArray(payload?.posts) ? payload.posts : [];
-   return {
-      posts: apiPosts.slice(0, PAGE_SIZE).map(mapApiPost),
-      nextCursor: null,
-   };
+      const payload = await response.json().catch(() => ({} as ApiFeedResponse));
+      if (!response.ok) {
+         throw new Error(
+            typeof (payload as { error?: unknown })?.error === 'string'
+               ? String((payload as { error: string }).error)
+               : `Failed to fetch home feed (${response.status})`,
+         );
+      }
+
+      const apiPosts = Array.isArray(payload?.posts) ? payload.posts : [];
+      return {
+         posts: apiPosts.slice(0, PAGE_SIZE).map(mapApiPost),
+         nextCursor: null,
+      };
+   } catch (error) {
+      const normalized = error instanceof Error ? error : new Error(String(error));
+      console.error('[Yuniko] Home feed real error:', normalized);
+      return {
+         posts: [],
+         nextCursor: null,
+         errorMessage: normalized.message,
+         errorStack: normalized.stack,
+      };
+   }
 }
