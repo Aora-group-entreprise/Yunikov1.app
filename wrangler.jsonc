@@ -6,20 +6,21 @@
    "compatibility_flags": ["nodejs_compat"],
    "assets": {
       "directory": ".open-next/assets",
-      "binding": "ASSETS"
+      "binding": "ASSETS",
+      "run_worker_first": true
    },
    "services": [
       {
          "binding": "YUNIKO_API",
-         "service": "yuniko-api"
+         "service": "yunikov1-app-api"
       }
    ],
    "vars": {
       "SUPABASE_URL": "https://pqjrmtkfgwoocbvmwbby.supabase.co",
       "NEXT_PUBLIC_SUPABASE_URL": "https://pqjrmtkfgwoocbvmwbby.supabase.co",
-      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_EcRG6tql7D2aWdCrzq3yEw_R_AjEHV0",
+      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_EcRG6tql7D2aWdCrzq3yEw_R_AJjEHV0",
       "YUNIKO_APP_URL": "https://yunikov1-app.lafatriniainaallane.workers.dev",
-      "YUNIKO_API_URL": "https://yuniko-api.lafatriniainaallane.workers.dev"
+      "YUNIKO_API_URL": "https://yunikov1-app-api.lafatriniainaallane.workers.dev"
    },
    "observability": {
       "enabled": true,
