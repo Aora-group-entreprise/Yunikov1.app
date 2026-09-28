@@ -11,8 +11,8 @@ export async function getFollowStatus(
    const { data: followData } = await supabase
       .from('follows')
       .select('follower_id, status')
-      .eq('follower_id', Number(authUserId))
-      .eq('following_id', Number(targetUserId))
+      .eq('follower_id', String(Number(authUserId)))
+      .eq('following_id', String(Number(targetUserId)))
       .maybeSingle();
 
    if (!followData) return 'none' as const;
@@ -29,8 +29,8 @@ export async function getBatchFollowStatuses(
    const { data: followData } = await supabase
       .from('follows')
       .select('following_id, status')
-      .eq('follower_id', Number(authUserId))
-      .in('following_id', targetIds.map(Number));
+      .eq('follower_id', String(Number(authUserId)))
+      .in('following_id', targetIds.map((id) => String(Number(id))));
 
    const result: Record<string, FollowState> = {};
    for (const id of targetIds) result[id] = 'none';
