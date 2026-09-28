@@ -1,6 +1,7 @@
 import type { QueryData, SupabaseClient } from '@supabase/supabase-js';
 import { DB_NOW } from '@/src/lib/dbTime';
 import type { Database } from '@/src/types/database';
+import { parseUnsplashAttribution } from '@/src/types/unsplash';
 
 export const ACTIVE_STORIES_SELECT = `
    *,
@@ -72,7 +73,7 @@ export function extractStoryMedia(row: StoryMediaRow) {
          type: 'image' as const,
          url: image.url,
          blurDataUrl: image.blur_data_url ?? null,
-         unsplashAttribution: image.unsplash_attribution ?? null,
+         unsplashAttribution: parseUnsplashAttribution(image.unsplash_attribution),
       };
    }
 
