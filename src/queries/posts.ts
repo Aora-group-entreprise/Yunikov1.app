@@ -42,8 +42,8 @@ export type PostsWithMedia = Array<{
    user?: {
       id: string;
       username: string;
-      full_name?: string | null;
-      avatar_url?: string | null;
+      full_name: string | null;
+      avatar_url: string | null;
    } | null;
    images: Array<{
       id: string;
