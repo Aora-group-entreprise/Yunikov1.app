@@ -77,7 +77,6 @@ function toPost(
       like_count: Number(post.likeCount ?? post.likes ?? 0),
       comment_count: Number(post.commentCount ?? post.comments ?? 0),
       repost_count: Number(post.repostCount ?? post.shares ?? 0),
-      visible_comment_count: [{ count: Number(post.commentCount ?? post.comments ?? 0) }],
       likes: [],
       saves: [],
       reposts: [],
