@@ -28,7 +28,9 @@ export default function PostFullViewModal() {
       queryKey: postId ? queryKeys.post(postId) : ['post'],
       queryFn: () => getPost({ postId: postId ?? '' }),
       enabled: !!postId,
-      initialData: preloadedPost ?? undefined,
+      initialData: preloadedPost
+         ? (preloadedPost as Awaited<ReturnType<typeof getPost>>)
+         : undefined,
    });
 
    if (!post) return null;
