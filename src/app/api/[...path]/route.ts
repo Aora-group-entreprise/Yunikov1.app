@@ -33,7 +33,7 @@ async function proxy(request: NextRequest) {
   }
 
   try {
-    const api = (env as { YUNIKO_API?: Fetcher }).YUNIKO_API;
+    const api = (env as { YUNIKO_API?: { fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> } }).YUNIKO_API;
     const upstream = api
       ? await api.fetch(new Request(target, init))
       : await fetch(target, init);
